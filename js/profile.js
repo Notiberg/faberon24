@@ -284,12 +284,10 @@ function openEditCarModal() {
   const brand = document.getElementById('62_1457').textContent;
   const model = document.getElementById('62_1458').textContent;
   const number = document.getElementById('62_1459').textContent;
-  const carClass = document.getElementById('62_1462').textContent;
   
   document.getElementById('edit-car-brand').value = brand;
   document.getElementById('edit-car-model').value = model;
   document.getElementById('edit-car-number').value = number;
-  document.getElementById('edit-car-class').value = carClass;
   
   editCarModal.classList.add('active');
   document.body.style.overflow = 'hidden';
@@ -309,11 +307,10 @@ async function handleEditCar(event) {
   const brand = document.getElementById('edit-car-brand').value;
   const model = document.getElementById('edit-car-model').value;
   const number = document.getElementById('edit-car-number').value;
-  const carClass = document.getElementById('edit-car-class').value;
   
   try {
     // Validate input
-    if (!brand || !model || !number || !carClass) {
+    if (!brand || !model || !number) {
       errorHandler.showNotification('Пожалуйста, заполните все поля', 'error');
       return;
     }
@@ -327,22 +324,18 @@ async function handleEditCar(event) {
       return;
     }
     
-    logger.info('Updating car', { carID: currentCarID, brand, model, number, carClass });
+    logger.info('Updating car', { carID: currentCarID, brand, model, number });
     
-    // Update car - only size can be updated via PATCH
-    // brand, model, license_plate are immutable after creation
-    await updateCar(currentCarID, {
-      size: carClass
-    });
+    // Note: brand, model, license_plate are immutable after creation in backend
+    // So we don't send them to the backend
+    // Only size/class can be updated, but we're not allowing that in the UI anymore
     
-    logger.info('Car updated successfully');
-    
-    // Reload user data to update cars list
+    // For now, we just reload the data to ensure UI is in sync with backend
     const user = await getCurrentUser();
     updateCarsListFromBackend(user.cars);
     
     closeEditCarModal();
-    errorHandler.showNotification(`Автомобиль ${brand} ${model} успешно обновлен!`, 'success');
+    errorHandler.showNotification(`Данные автомобиля ${brand} ${model} синхронизированы!`, 'success');
     
   } catch (error) {
     const errorInfo = errorHandler.handle(error, 'handleEditCar');
