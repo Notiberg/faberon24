@@ -34,6 +34,16 @@ function determineCarClass(brand, model) {
 // Load user data on page load
 document.addEventListener('DOMContentLoaded', async () => {
   try {
+    // Add small delay to ensure all DOM elements are ready
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    // Check if required elements exist
+    const requiredElements = ['62_1445', '62_1446', '62_1457', '62_1458', '62_1459', '62_1462', '62_1468', 'car-dropdown-menu'];
+    const missingElements = requiredElements.filter(id => !document.getElementById(id));
+    if (missingElements.length > 0) {
+      logger.warn('Missing DOM elements:', { missingElements });
+    }
+    
     loadUserCredentials();
     
     // If no user ID, use test credentials
@@ -47,13 +57,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Load user data from backend
     const user = await getCurrentUser();
     
-    logger.info('User data loaded successfully', { name: user.name });
+    logger.info('User data loaded successfully', { name: user.name, carsCount: user.cars.length });
     
     // Update profile section
-    document.getElementById('62_1445').textContent = user.name;
-    document.getElementById('62_1446').textContent = `тел. ${user.phone_number}`;
+    const nameElement = document.getElementById('62_1445');
+    const phoneElement = document.getElementById('62_1446');
+    
+    if (nameElement) {
+      nameElement.textContent = user.name;
+      logger.info('Updated name element');
+    } else {
+      logger.warn('Name element (62_1445) not found');
+    }
+    
+    if (phoneElement) {
+      phoneElement.textContent = `тел. ${user.phone_number}`;
+      logger.info('Updated phone element');
+    } else {
+      logger.warn('Phone element (62_1446) not found');
+    }
     
     // Update cars list
+    logger.info('Updating cars list from backend', { cars: user.cars });
     updateCarsListFromBackend(user.cars);
     
   } catch (error) {
