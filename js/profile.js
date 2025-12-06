@@ -91,6 +91,7 @@ function updateCarsListFromBackend(cars) {
   }
   
   // Add cars from backend
+  let selectedCar = null;
   cars.forEach(car => {
     const carKey = `${car.brand} ${car.model} - ${car.license_plate}`;
     const option = document.createElement('div');
@@ -99,16 +100,23 @@ function updateCarsListFromBackend(cars) {
     option.onclick = () => selectCarFromBackend(car.id, carKey);
     carDropdownMenu.appendChild(option);
     
-    // If this car is selected, update the display
+    // If this car is selected, save it
     if (car.is_selected) {
-      document.getElementById('62_1468').textContent = carKey;
-      document.getElementById('62_1457').textContent = car.brand;
-      document.getElementById('62_1458').textContent = car.model;
-      document.getElementById('62_1459').textContent = car.license_plate;
-      document.getElementById('62_1462').textContent = car.size || 'Неизвестно';
-      window.currentCarID = car.id;
+      selectedCar = car;
     }
   });
+  
+  // Update the display with the selected car
+  if (selectedCar) {
+    const carKey = `${selectedCar.brand} ${selectedCar.model} - ${selectedCar.license_plate}`;
+    document.getElementById('62_1468').textContent = carKey;
+    document.getElementById('62_1457').textContent = selectedCar.brand;
+    document.getElementById('62_1458').textContent = selectedCar.model;
+    document.getElementById('62_1459').textContent = selectedCar.license_plate;
+    document.getElementById('62_1462').textContent = selectedCar.size || 'Неизвестно';
+    window.currentCarID = selectedCar.id;
+    logger.info('Selected car updated', { carID: selectedCar.id, brand: selectedCar.brand, model: selectedCar.model });
+  }
   
   logger.info('Cars list updated', { count: cars.length });
 }

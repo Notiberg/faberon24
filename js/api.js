@@ -24,8 +24,15 @@ function loadUserCredentials() {
 
 // Get auth headers
 function getAuthHeaders() {
+  // Ensure userID is a string for headers
+  const userID = String(currentUserID);
+  
+  if (!userID || userID === 'null' || userID === 'undefined') {
+    logger.warn('Missing user ID in auth headers', { currentUserID });
+  }
+  
   return {
-    'X-User-ID': currentUserID,
+    'X-User-ID': userID,
     'X-User-Role': currentUserRole
   };
 }
