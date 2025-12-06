@@ -64,15 +64,44 @@ async function apiRequest(method, endpoint, body = null) {
 
   try {
     const response = await fetch(url, options);
-    const data = await response.json();
+    
+    // Log response status
+    logger.debug(`API Response: ${method} ${url} - Status ${response.status}`);
+    
+    // Handle 204 No Content (success with no body)
+    if (response.status === 204) {
+      logger.debug('API Success (204 No Content)');
+      return { success: true };
+    }
+    
+    // Try to parse JSON response
+    let data;
+    try {
+      const responseText = await response.text();
+      if (responseText) {
+        data = JSON.parse(responseText);
+      } else {
+        data = { success: response.ok };
+      }
+    } catch (jsonError) {
+      logger.warn(`Failed to parse response: ${jsonError.message}`);
+      // If response is not JSON, create error object
+      data = {
+        message: `Server returned ${response.status}: ${response.statusText}`
+      };
+    }
 
     if (!response.ok) {
-      throw new Error(data.message || `API Error: ${response.status}`);
+      const errorMessage = data.message || data.error || `API Error: ${response.status}`;
+      throw new Error(errorMessage);
     }
 
     return data;
   } catch (error) {
-    logger.error(`API Error (${method} ${endpoint}):`, error);
+    logger.error(`API Error (${method} ${endpoint}):`, {
+      message: error.message,
+      stack: error.stack
+    });
     throw error;
   }
 }
