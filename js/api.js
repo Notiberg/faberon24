@@ -55,7 +55,7 @@ async function apiRequest(method, endpoint, body = null) {
 
     return data;
   } catch (error) {
-    console.error(`API Error (${method} ${endpoint}):`, error);
+    logger.error(`API Error (${method} ${endpoint}):`, error);
     throw error;
   }
 }

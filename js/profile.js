@@ -1,16 +1,20 @@
 // Load user data on page load
 document.addEventListener('DOMContentLoaded', async () => {
-  loadUserCredentials();
-  
-  // If no user ID, use test credentials
-  if (!currentUserID) {
-    console.log('No user logged in, using test credentials');
-    setUserCredentials(123456789, 'client');
-  }
-  
   try {
+    loadUserCredentials();
+    
+    // If no user ID, use test credentials
+    if (!currentUserID) {
+      logger.info('No user logged in, using test credentials');
+      setUserCredentials(123456789, 'client');
+    }
+    
+    logger.info('Loading user data from backend');
+    
     // Load user data from backend
     const user = await getCurrentUser();
+    
+    logger.info('User data loaded successfully', { name: user.name });
     
     // Update profile section
     document.getElementById('62_1445').textContent = user.name;
@@ -20,9 +24,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateCarsListFromBackend(user.cars);
     
   } catch (error) {
-    console.error('Failed to load user data:', error);
-    // Show error to user
-    alert('Ошибка при загрузке данных профиля: ' + error.message);
+    const errorInfo = errorHandler.handle(error, 'profile.js DOMContentLoaded');
+    logger.error('Failed to load user data:', errorInfo);
+    errorHandler.showNotification(errorInfo.userMessage, 'error');
   }
 });
 

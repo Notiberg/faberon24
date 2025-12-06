@@ -1,11 +1,19 @@
 // Initialize user credentials on page load
 document.addEventListener('DOMContentLoaded', () => {
-  loadUserCredentials();
-  
-  // If no user ID, use test credentials
-  if (!currentUserID) {
-    console.log('No user logged in, using test credentials');
-    setUserCredentials(123456789, 'client');
+  try {
+    loadUserCredentials();
+    
+    // If no user ID, use test credentials
+    if (!currentUserID) {
+      logger.info('No user logged in, using test credentials');
+      setUserCredentials(123456789, 'client');
+    }
+    
+    logger.info('Index page initialized');
+  } catch (error) {
+    const errorInfo = errorHandler.handle(error, 'index.js DOMContentLoaded');
+    logger.error('Failed to initialize page:', errorInfo);
+    errorHandler.showNotification(errorInfo.userMessage, 'error');
   }
 });
 
