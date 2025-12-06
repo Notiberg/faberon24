@@ -244,6 +244,12 @@ async function handleEditCar(event) {
   const carClass = document.getElementById('edit-car-class').value;
   
   try {
+    // Validate input
+    if (!brand || !model || !number || !carClass) {
+      errorHandler.showNotification('Пожалуйста, заполните все поля', 'error');
+      return;
+    }
+    
     // Update car in backend
     const currentCarID = window.currentCarID;
     
@@ -253,8 +259,10 @@ async function handleEditCar(event) {
       return;
     }
     
-    logger.info('Updating car', { carID: currentCarID, brand, model });
+    logger.info('Updating car', { carID: currentCarID, brand, model, number, carClass });
     
+    // Update car - only size can be updated via PATCH
+    // brand, model, license_plate are immutable after creation
     await updateCar(currentCarID, {
       size: carClass
     });

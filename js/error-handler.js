@@ -115,7 +115,13 @@ const logger = {
 // Error handler
 const errorHandler = {
   handle(error, context = '') {
-    logger.error(`Error in ${context}:`, error);
+    // Log full error details
+    console.error(`[${context}] Full error:`, error);
+    logger.error(`Error in ${context}:`, {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
     
     // Determine error type
     let errorType = ErrorTypes.UNKNOWN;
@@ -134,6 +140,9 @@ const errorHandler = {
       userMessage = 'Ошибка при обработке ответа сервера.';
     } else if (error.message && error.message.includes('API Error')) {
       errorType = ErrorTypes.API;
+      userMessage = error.message;
+    } else if (error.message) {
+      // Use error message if available
       userMessage = error.message;
     }
     
