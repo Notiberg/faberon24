@@ -32,7 +32,24 @@ function getAuthHeaders() {
 
 // Make API request
 async function apiRequest(method, endpoint, body = null) {
+  // Validate endpoint
+  if (!endpoint || typeof endpoint !== 'string') {
+    throw new Error('Invalid endpoint: must be a non-empty string');
+  }
+  
+  // Validate user credentials
+  if (!currentUserID) {
+    throw new Error('User not authenticated: currentUserID is not set');
+  }
+  
   const url = `${API_BASE_URL}${endpoint}`;
+  
+  // Log request for debugging
+  logger.debug(`API Request: ${method} ${url}`, { 
+    userID: currentUserID,
+    role: currentUserRole 
+  });
+  
   const options = {
     method,
     headers: {
@@ -134,31 +151,57 @@ async function createCar(carData) {
 
 // Update car
 async function updateCar(carID, updateData) {
+  // Validate carID
+  if (carID === null || carID === undefined || carID === '') {
+    throw new Error('Invalid car ID: carID is required');
+  }
+  
   // Ensure carID is a number
   const numCarID = parseInt(carID, 10);
-  if (isNaN(numCarID)) {
-    throw new Error('Invalid car ID: must be a number');
+  if (isNaN(numCarID) || numCarID <= 0) {
+    throw new Error(`Invalid car ID: "${carID}" is not a valid positive number`);
   }
+  
+  // Validate updateData
+  if (!updateData || typeof updateData !== 'object') {
+    throw new Error('Invalid update data: must be an object');
+  }
+  
+  logger.info('Updating car', { carID: numCarID, updateData });
   return apiRequest('PATCH', `/users/me/cars/${numCarID}`, updateData);
 }
 
 // Delete car
 async function deleteCar(carID) {
+  // Validate carID
+  if (carID === null || carID === undefined || carID === '') {
+    throw new Error('Invalid car ID: carID is required');
+  }
+  
   // Ensure carID is a number
   const numCarID = parseInt(carID, 10);
-  if (isNaN(numCarID)) {
-    throw new Error('Invalid car ID: must be a number');
+  if (isNaN(numCarID) || numCarID <= 0) {
+    throw new Error(`Invalid car ID: "${carID}" is not a valid positive number`);
   }
+  
+  logger.info('Deleting car', { carID: numCarID });
   return apiRequest('DELETE', `/users/me/cars/${numCarID}`);
 }
 
 // Select car
 async function selectCar(carID) {
+  // Validate carID
+  if (carID === null || carID === undefined || carID === '') {
+    throw new Error('Invalid car ID: carID is required');
+  }
+  
   // Ensure carID is a number
   const numCarID = parseInt(carID, 10);
-  if (isNaN(numCarID)) {
-    throw new Error('Invalid car ID: must be a number');
+  if (isNaN(numCarID) || numCarID <= 0) {
+    throw new Error(`Invalid car ID: "${carID}" is not a valid positive number`);
   }
+  
+  logger.info('Selecting car', { carID: numCarID });
   return apiRequest('PUT', `/users/me/cars/${numCarID}/select`);
 }
 
