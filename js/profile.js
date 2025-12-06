@@ -70,8 +70,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     logger.info('Loading user data from backend');
     
-    // Load user data from backend
-    const user = await getCurrentUser();
+    // Load user data from backend with timeout
+    const user = await executeWithTimeout(getCurrentUser());
     
     logger.info('User data loaded successfully', { name: user.name, carsCount: user.cars.length });
     
@@ -347,25 +347,36 @@ function toggleCarDropdown() {
 }
 
 async function selectCarFromBackend(carID, carName) {
+  // Prevent multiple simultaneous requests
+  if (isUpdating) {
+    logger.warn('Already updating, please wait');
+    return;
+  }
+  
+  isUpdating = true;
+  
   try {
-    // Select car in backend
-    await selectCar(carID);
+    // Select car in backend with timeout
+    await executeWithTimeout(selectCar(carID));
     
     // Update UI
     const carText = document.getElementById('62_1468');
     carText.textContent = carName;
     
-    // Reload user data to update selected car
-    const user = await getCurrentUser();
+    // Reload user data to update selected car with timeout
+    const user = await executeWithTimeout(getCurrentUser());
     updateCarsListFromBackend(user.cars);
     
     dropdownOpen = false;
     carDropdownMenu.classList.remove('active');
-    console.log('Выбран автомобиль:', carName);
+    logger.info('Car selected:', { carID, carName });
     
   } catch (error) {
-    console.error('Failed to select car:', error);
-    alert('Ошибка при выборе автомобиля: ' + error.message);
+    const errorInfo = errorHandler.handle(error, 'selectCarFromBackend');
+    logger.error('Failed to select car:', errorInfo);
+    errorHandler.showNotification(errorInfo.userMessage, 'error');
+  } finally {
+    isUpdating = false;
   }
 }
 
@@ -605,16 +616,30 @@ function handleAvatarChange(event) {
 async function handleProfileSettingsSubmit(event) {
   event.preventDefault();
   
+  // Prevent multiple simultaneous requests
+  if (isUpdating) {
+    logger.warn('Already updating, please wait');
+    return;
+  }
+  
+  isUpdating = true;
+  
   const firstName = document.getElementById('profile-first-name').value;
   const lastName = document.getElementById('profile-last-name').value;
   const phone = document.getElementById('profile-phone').value;
   
   try {
-    // Update profile in backend
-    await updateCurrentUser({
+    // Validate input
+    if (!firstName || !lastName || !phone) {
+      errorHandler.showNotification('Пожалуйста, заполните все поля', 'error');
+      return;
+    }
+    
+    // Update profile in backend with timeout
+    await executeWithTimeout(updateCurrentUser({
       name: `${firstName} ${lastName}`,
       phone_number: phone
-    });
+    }));
     
     // Update UI
     const fullName = `${firstName} ${lastName}`;
@@ -622,11 +647,14 @@ async function handleProfileSettingsSubmit(event) {
     document.getElementById('62_1446').textContent = `тел. ${phone}`;
     
     closeProfileSettingsModal();
-    alert(`Профиль успешно обновлен!`);
+    errorHandler.showNotification(`Профиль успешно обновлен!`, 'success');
     
   } catch (error) {
-    console.error('Failed to update profile:', error);
-    alert('Ошибка при обновлении профиля: ' + error.message);
+    const errorInfo = errorHandler.handle(error, 'handleProfileSettingsSubmit');
+    logger.error('Failed to update profile:', errorInfo);
+    errorHandler.showNotification(errorInfo.userMessage, 'error');
+  } finally {
+    isUpdating = false;
   }
 }
 
