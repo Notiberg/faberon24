@@ -1,0 +1,189 @@
+================================================================================
+                    SMC-UserService API ENDPOINTS SUMMARY
+================================================================================
+
+BASE URL: http://localhost:8080
+
+================================================================================
+                            USER MANAGEMENT
+================================================================================
+
+1. CREATE USER (Public)
+   POST /users
+   Body: {
+     "tg_user_id": 123456789,
+     "name": "Иван",
+     "phone_number": "+79991234567",
+     "tg_link": "@ivan",
+     "role": "client"
+   }
+   Response: User object
+   JS: await createUser(userData)
+
+2. GET CURRENT USER (Protected)
+   GET /users/me
+   Headers: X-User-ID, X-User-Role
+   Response: User with cars array
+   JS: await getCurrentUser()
+
+3. UPDATE CURRENT USER (Protected)
+   PUT /users/me
+   Headers: X-User-ID, X-User-Role
+   Body: { "name": "...", "phone_number": "..." }
+   Response: Updated user
+   JS: await updateCurrentUser(updateData)
+
+4. DELETE CURRENT USER (Protected)
+   DELETE /users/me
+   Headers: X-User-ID, X-User-Role
+   Response: Success message
+   JS: await deleteCurrentUser()
+
+5. GET USER BY ID (Internal)
+   GET /internal/users/{tg_user_id}
+   Response: User with cars
+   JS: await getUserByID(tgUserID)
+
+================================================================================
+                            CAR MANAGEMENT
+================================================================================
+
+6. CREATE CAR (Protected)
+   POST /users/me/cars
+   Headers: X-User-ID, X-User-Role
+   Body: {
+     "brand": "BMW",
+     "model": "X5",
+     "license_plate": "Р927СО777",
+     "color": "Черный",
+     "size": "J"
+   }
+   Response: Car object (first car auto-selected)
+   JS: await createCar(carData)
+
+7. UPDATE CAR (Protected)
+   PATCH /users/me/cars/{car_id}
+   Headers: X-User-ID, X-User-Role
+   Body: { "color": "...", "size": "..." }
+   Response: Updated car
+   JS: await updateCar(carID, updateData)
+
+8. DELETE CAR (Protected)
+   DELETE /users/me/cars/{car_id}
+   Headers: X-User-ID, X-User-Role
+   Response: Success message
+   JS: await deleteCar(carID)
+
+9. SELECT CAR (Protected)
+   PUT /users/me/cars/{car_id}/select
+   Headers: X-User-ID, X-User-Role
+   Response: Car with is_selected=true
+   JS: await selectCar(carID)
+
+10. GET SELECTED CAR (Internal)
+    GET /internal/users/{tg_user_id}/cars/selected
+    Response: Selected car object
+    JS: await getSelectedCar(tgUserID)
+
+================================================================================
+                        AUTHENTICATION HEADERS
+================================================================================
+
+All protected endpoints require:
+  X-User-ID: <telegram_user_id>
+  X-User-Role: <client|manager|superuser>
+
+These are automatically added by api.js when you call:
+  setUserCredentials(userID, role)
+
+================================================================================
+                            UTILITY FUNCTIONS
+================================================================================
+
+setUserCredentials(userID, role)     - Set auth credentials
+loadUserCredentials()                - Load from localStorage
+getAuthHeaders()                     - Get auth headers
+formatCarData(car)                   - Format car for display
+formatUserData(user)                 - Format user for display
+apiRequest(method, endpoint, body)   - Make API request
+
+================================================================================
+                            ERROR RESPONSES
+================================================================================
+
+400 Bad Request      - Invalid data
+403 Forbidden        - Access denied
+404 Not Found        - Resource not found
+500 Server Error     - Internal error
+
+================================================================================
+                            IMPORTANT NOTES
+================================================================================
+
+1. User ID = Telegram user ID (int64)
+2. Car ID = Database car ID (int64)
+3. First created car is automatically selected
+4. Only one car can be selected at a time
+5. When deleting selected car, first remaining becomes selected
+6. Clients can only access their own data (unless superuser)
+7. All credentials stored in localStorage
+8. All API calls are async (use await)
+
+================================================================================
+                            QUICK REFERENCE
+================================================================================
+
+// Load credentials from storage
+loadUserCredentials();
+
+// Create user
+const user = await createUser({
+  tgUserID: 123456789,
+  name: 'Иван',
+  phoneNumber: '+79991234567',
+  tgLink: '@ivan',
+  role: 'client'
+});
+
+// Get current user
+const user = await getCurrentUser();
+
+// Update user
+await updateCurrentUser({
+  name: 'New Name',
+  phone_number: '+79999999999'
+});
+
+// Create car
+const car = await createCar({
+  brand: 'BMW',
+  model: 'X5',
+  licensePlate: 'Р927СО777',
+  color: 'Черный',
+  size: 'J'
+});
+
+// Update car
+await updateCar(carID, { color: 'Белый' });
+
+// Delete car
+await deleteCar(carID);
+
+// Select car
+await selectCar(carID);
+
+// Get selected car
+const selectedCar = await getSelectedCar(tgUserID);
+
+================================================================================
+                        DOCUMENTATION FILES
+================================================================================
+
+1. API_REFERENCE.md           - Complete API documentation
+2. BACKEND_INTEGRATION.md     - Setup and integration guide
+3. INTEGRATION_EXAMPLES.md    - Code examples for profile.js and index.js
+4. INTEGRATION_CHECKLIST.md   - Checklist of completed tasks
+5. BACKEND_SETUP.md           - Quick start guide
+6. ENDPOINTS_SUMMARY.txt      - This file
+
+================================================================================

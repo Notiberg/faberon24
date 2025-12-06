@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pixso HTML</title>
+  <link rel="stylesheet" href="./Страница профиль/css/font.css">
+  <link rel="stylesheet" href="./css/profile.css">
+  <script src="./Страница профиль/js/animation.js"></script>
+  <script src="./js/api.js" defer></script>
+  <script src="./js/profile.js" defer></script>
+</head>
+<body>
+<!-- Background image -->
+<div class="rectangle-61_11-bg"></div>
+
+<!-- Glass background on full screen -->
+<div class="glass-bg-0_1"></div>
+
+<div class="scroll-container-0_1">
+  <div id="0_1" class="canvas-0_1">
+    <div id="61_10" class="frame-61_10">
+      <div id="61_12" class="frame-61_12">
+        <!-- Service history section - hidden -->
+      <!-- <div id="62_1477" class="frame-62_1477">
+          <span id="62_1481" class="text-62_1481">Всего услуг:</span>
+          <span id="62_1482" class="text-62_1482">Общая сумма:</span>
+          <span id="62_1487" class="text-62_1487">4</span>
+          <span id="62_1488" class="text-62_1488">11900</span>
+          <span id="62_441" class="text-62_441">Последняя услуга</span>
+          <span id="62_442" class="text-62_442">Фабреон24</span>
+          <span id="62_443" class="text-62_443">Комплексная мойка салона и подкапотного пространства</span>
+          <span id="62_444" class="text-62_444">4450 ₽</span>
+          <span id="62_445" class="text-62_445">15.11.2025</span>
+          <div id="62_1500" class="vector-62_1500"></div>
+        </div>
+        <span id="62_1479" class="text-62_1479">История обслуживания</span>
+        <div id="64_403" class="frame-64_403"></div> -->
+      </div>
+      <div id="62_1430" class="frame-62_1430">
+        <div id="62_1455" class="vector-62_1455"></div>
+        <span id="62_1457" class="text-62_1457">BMW</span>
+        <span id="62_1458" class="text-62_1458">X5</span>
+        <span id="62_1459" class="text-62_1459">Р927СО777</span>
+        <span id="62_1461" class="text-62_1461">Класс автомобиля</span>
+        <span id="62_1462" class="text-62_1462">Класс 3</span>
+      </div>
+      <span id="62_1456" class="text-62_1456">Мой автомобиль </span>
+      <div id="62_1463" class="frame-62_1463">
+        <span id="62_1468" class="text-62_1468">BMW X5 - Р927СО777</span>
+        <div id="62_1470" class="vector-62_1470"></div>
+        <!-- Dropdown Menu -->
+        <div id="car-dropdown-menu" class="car-dropdown-menu">
+          <!-- Cars will be loaded from backend -->
+        </div>
+      </div>
+      <div id="62_1474" class="frame-62_1474">
+        <div id="62_1453" class="vector-62_1453"></div>
+      </div>
+      <div id="62_1442" class="frame-62_1442">
+        <div id="62_1443" class="rectangle-62_1443"></div>
+        <div id="62_1450" class="vector-62_1450"></div>
+        <span id="62_1445" class="text-62_1445">Алексеев Станислав</span>
+        <span id="62_1446" class="text-62_1446">тел. +7 (987) 123-45-67</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom menu -->
+<div id="21_193" class="frame-21_193">
+  <div id="23_5" class="rectangle-23_5"></div>
+  <div id="21_925" class="rectangle-21_925"></div>
+  <a href="profile.html" id="23_9" class="vector-23_9"></a>
+  <span id="23_7" class="text-23_7" onclick="window.location.href='index.html';">Главная</span>
+  <a href="index.html" id="23_13" class="vector-23_13"></a>
+  <span id="23_11" class="text-23_11" onclick="window.location.href='profile.html';">Профиль</span>
+</div>
+
+<!-- Edit Car Modal -->
+<div id="edit-car-modal" class="edit-car-modal-overlay">
+  <div class="edit-car-modal-content">
+    <button class="edit-car-modal-close" onclick="closeEditCarModal()">×</button>
+    <div class="edit-car-modal-title">Редактировать автомобиль</div>
+    <form id="edit-car-form" onsubmit="handleEditCar(event)">
+      <div class="edit-car-form-group">
+        <label for="edit-car-brand">Марка</label>
+        <input type="text" id="edit-car-brand" placeholder="BMW" required>
+      </div>
+      <div class="edit-car-form-group">
+        <label for="edit-car-model">Модель</label>
+        <input type="text" id="edit-car-model" placeholder="X5" required>
+      </div>
+      <div class="edit-car-form-group">
+        <label for="edit-car-number">Номер</label>
+        <input type="text" id="edit-car-number" placeholder="Р927СО777" required>
+      </div>
+      <div class="edit-car-form-group">
+        <label for="edit-car-class">Класс автомобиля</label>
+        <input type="text" id="edit-car-class" placeholder="Класс 3" required>
+      </div>
+      <div class="edit-car-button-group">
+        <button type="submit" class="edit-car-submit-btn">Сохранить</button>
+        <button type="button" class="edit-car-delete-btn" onclick="handleDeleteCar()">Удалить</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Add Car Modal -->
+<div id="add-car-modal" class="add-car-modal-overlay">
+  <div class="add-car-modal-content">
+    <button class="add-car-modal-close" onclick="closeAddCarModal()">×</button>
+    <div class="add-car-modal-title">Добавить автомобиль</div>
+    <form id="add-car-form" onsubmit="handleAddCar(event)">
+      <div class="add-car-form-group">
+        <label for="car-brand">Марка автомобиля</label>
+        <input type="text" id="car-brand" placeholder="Например: BMW" required>
+      </div>
+      <div class="add-car-form-group">
+        <label for="car-model">Модель</label>
+        <input type="text" id="car-model" placeholder="Например: X5" required>
+      </div>
+      <div class="add-car-form-group">
+        <label for="car-number">Регистрационный номер</label>
+        <input type="text" id="car-number" placeholder="Например: А123БВ77" required>
+      </div>
+      <button type="submit" class="add-car-submit-btn">Добавить</button>
+    </form>
+  </div>
+</div>
+
+<!-- Profile Settings Modal -->
+<div id="profile-settings-modal" class="profile-settings-modal-overlay">
+  <div class="profile-settings-modal-content">
+    <button class="profile-settings-modal-close" onclick="closeProfileSettingsModal()">×</button>
+    <div class="profile-settings-modal-title">Настройки профиля</div>
+    <form id="profile-settings-form" onsubmit="handleProfileSettingsSubmit(event)">
+      <div class="profile-settings-avatar-upload">
+        <div class="profile-settings-avatar-preview">
+          <img id="avatar-preview-img" src="./Страница профиль/image/Rectangle_62_1443.png" alt="Avatar">
+        </div>
+        <div>
+          <input type="file" id="avatar-input" class="profile-settings-avatar-input" accept="image/*" onchange="handleAvatarChange(event)">
+          <button type="button" class="profile-settings-avatar-button" onclick="document.getElementById('avatar-input').click();">
+            Изменить аватарку
+          </button>
+        </div>
+      </div>
+      <div class="profile-settings-form-group">
+        <label for="profile-first-name">Имя</label>
+        <input type="text" id="profile-first-name" placeholder="Введите имя" required>
+      </div>
+      <div class="profile-settings-form-group">
+        <label for="profile-last-name">Фамилия</label>
+        <input type="text" id="profile-last-name" placeholder="Введите фамилию" required>
+      </div>
+      <div class="profile-settings-form-group">
+        <label for="profile-phone">Номер телефона</label>
+        <input type="tel" id="profile-phone" placeholder="+7 (XXX) XXX-XX-XX" required>
+      </div>
+      <button type="submit" class="profile-settings-submit-btn">Сохранить</button>
+    </form>
+  </div>
+</div>
+
+
+</body>
+</html>

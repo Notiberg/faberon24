@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <rect width="200" height="200" fill="white"/>
+  <g fill="black">
+    <!-- Top-left position marker -->
+    <rect x="10" y="10" width="50" height="50"/>
+    <rect x="15" y="15" width="40" height="40" fill="white"/>
+    <rect x="20" y="20" width="30" height="30"/>
+    
+    <!-- Top-right position marker -->
+    <rect x="140" y="10" width="50" height="50"/>
+    <rect x="145" y="15" width="40" height="40" fill="white"/>
+    <rect x="150" y="20" width="30" height="30"/>
+    
+    <!-- Bottom-left position marker -->
+    <rect x="10" y="140" width="50" height="50"/>
+    <rect x="15" y="145" width="40" height="40" fill="white"/>
+    <rect x="20" y="150" width="30" height="30"/>
+    
+    <!-- Timing patterns -->
+    <rect x="70" y="12" width="4" height="4"/>
+    <rect x="78" y="12" width="4" height="4"/>
+    <rect x="86" y="12" width="4" height="4"/>
+    <rect x="94" y="12" width="4" height="4"/>
+    <rect x="102" y="12" width="4" height="4"/>
+    <rect x="110" y="12" width="4" height="4"/>
+    <rect x="118" y="12" width="4" height="4"/>
+    
+    <!-- Data area -->
+    <rect x="70" y="70" width="60" height="60"/>
+    <rect x="75" y="75" width="50" height="50" fill="white"/>
+    <rect x="80" y="80" width="40" height="40"/>
+  </g>
+</svg>

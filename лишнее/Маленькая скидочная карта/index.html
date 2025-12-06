@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pixso HTML</title>
+  <link rel="stylesheet" href="css/font.css">
+  <script src="js/animation.js"></script>
+  <style>
+:root, 
+[data-collection-3-15-mode="light"] {
+  /* Light */
+  --opacity-dark-opacity-80: rgba(0, 0, 0, 204);
+}
+
+[data-collection-3-15-mode="dark"] {
+  /* Dark */
+  --opacity-dark-opacity-80: rgba(255, 255, 255, 204);
+}
+
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  width: 100%;
+  height: 100%;
+}
+
+body { 
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  background-color: white;
+}
+    
+span {
+  word-break: break-word;
+}
+
+.fill-white-2_882-text {
+        color: rgba(255, 255, 255, 1)
+      }
+.stroke-neutralswhite-2_881 {
+        border-width: 0px;
+box-sizing: border-box;
+border-style: solid;
+border-color: rgba(255, 255, 255, 1)
+      }
+
+.scroll-container-0_1 {
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+}
+
+.canvas-0_1 {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.frame-2_501 {
+  width: 402px;
+  height: 56px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.vector-2_502 {
+  width: 100%;
+  height: 100%;
+  background-image: url(./image/Rectangle_2_502.png);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  position: absolute;
+  left: 0%;
+  right: 0%;
+  top: 0%;
+  bottom: 0%;
+}
+
+.frame-21_928 {
+  width: 443px;
+  height: 966px;
+  position: absolute;
+  left: -490px;
+  top: -268px;
+  background-color: rgba(255, 255, 255, 0.30000001192092896);
+}
+
+.vector-2_503 {
+  width: 100%;
+  height: 100%;
+  background-image: url(./image/Group_2_503.png);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  position: absolute;
+  left: 0%;
+  right: 0%;
+  top: 0%;
+  bottom: 0%;
+}
+
+.group-2_509 {
+  width: 63.09%;
+  height: 76.09%;
+  position: absolute;
+  left: 23.38%;
+  right: 13.53%;
+  top: 21.43%;
+  bottom: 2.48%;
+}
+
+.text-2_510 {
+  font-size: 11px;
+  font-family: Inter;
+  font-weight: 600;
+  letter-spacing: 0em;
+  width: 125px;
+  height: 26.611764907836914px;
+  position: absolute;
+  left: 0px;
+  top: 16px;
+  text-shadow: 0px 4px 4px rgba(22.3125, 22.3125, 22.3125, 0.15999999700808057);
+}
+
+.text-2_511 {
+  font-size: 11px;
+  font-family: Inter;
+  font-weight: 400;
+  letter-spacing: 0em;
+  width: 91px;
+  height: 25.247058868408203px;
+  position: absolute;
+  left: 0px;
+  top: 0px;
+}
+
+.text-2_512 {
+  font-size: 11px;
+  font-family: Inter;
+  font-weight: 400;
+  letter-spacing: 0em;
+  width: 84px;
+  height: 25px;
+  position: absolute;
+  left: 149px;
+  top: 0px;
+}
+
+.text-2_513 {
+  font-size: 11px;
+  font-family: Inter;
+  font-weight: 600;
+  letter-spacing: 0em;
+  width: 51px;
+  height: 17.74117660522461px;
+  position: absolute;
+  left: 149px;
+  top: 16px;
+  text-shadow: 0px 4px 4px rgba(22.3125, 22.3125, 22.3125, 0.15999999700808057);
+}
+
+.text-2_514 {
+  font-size: 14px;
+  font-family: Inter;
+  font-weight: 600;
+  letter-spacing: 0.03999999910593033em;
+  color: rgba(232, 232, 232, 1);
+  width: 253.60000610351562px;
+  height: 13.100000381469727px;
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  opacity: 0;
+  text-shadow: 0px 2px 5px rgba(23.375, 23.375, 23.375, 0.4);
+}
+
+.group-2_516 {
+  width: 7.62%;
+  height: 47.65%;
+  position: absolute;
+  left: 77.11%;
+  right: 15.27%;
+  top: 19.64%;
+  bottom: 32.71%;
+  opacity: 0;
+}
+
+.rectangle-2_517 {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  left: 0%;
+  right: 0%;
+  top: 0%;
+  bottom: 0%;
+  border-radius: 7.249999523162842px 7.249999523162842px 7.249999523162842px 7.249999523162842px;
+  background-color: rgba(255, 255, 255, 0.25999999046325684);
+}
+
+.vector-2_518 {
+  width: 32.81%;
+  height: 67.27%;
+  background-image: url(./image/Vector_2_518.png);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  position: absolute;
+  left: 1.56%;
+  right: 65.63%;
+  top: 30.76%;
+  bottom: 1.97%;
+}
+
+.vector-2_519 {
+  width: 31.25%;
+  height: 95.98%;
+  background-image: url(./image/Vector_2_519.png);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  position: absolute;
+  left: 67.19%;
+  right: 1.56%;
+  top: 2.05%;
+  bottom: 1.97%;
+}
+
+.frame-2_520 {
+  width: 5.97%;
+  height: 42.86%;
+  overflow: hidden;
+  position: absolute;
+  left: 86.57%;
+  right: 7.46%;
+  top: 28.57%;
+  bottom: 28.57%;
+}
+
+.vector-50_1 {
+  width: 83.34%;
+  height: 83.34%;
+  background-image: url(./image/Vector_50_1.png);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  position: absolute;
+  left: 8.33%;
+  right: 8.33%;
+  top: 8.33%;
+  bottom: 8.33%;
+}
+
+.frame-2_1356 {
+  width: 6.96%;
+  height: 69.64%;
+  overflow: hidden;
+  position: absolute;
+  left: 8.96%;
+  right: 84.08%;
+  top: 14.29%;
+  bottom: 16.07%;
+}
+
+.vector-2_1357 {
+  width: 51.93%;
+  height: 97.34%;
+  background-image: url(./image/Vector_2_1357.png);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  position: absolute;
+  left: 0%;
+  right: 48.07%;
+  top: 1.18%;
+  bottom: 1.48%;
+}
+
+.vector-2_1358 {
+  width: 75.05%;
+  height: 25.49%;
+  background-image: url(./image/Vector_2_1358.png);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  position: absolute;
+  left: 0%;
+  right: 24.95%;
+  top: 35.01%;
+  bottom: 39.5%;
+}
+
+.vector-2_1359 {
+  width: 65.01%;
+  height: 25.49%;
+  background-image: url(./image/Vector_2_1359.png);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  position: absolute;
+  left: 32.5%;
+  right: 2.49%;
+  top: 1.19%;
+  bottom: 73.32%;
+}
+
+.container {
+  width: 100%;
+  height: 100%;
+}
+
+.container > * {
+  width: 100%;
+  height: 100%;
+}
+
+  </style>
+</head>
+<body>
+<div class="scroll-container-0_1">
+  <div id="0_1" class="canvas-0_1">
+    <div id="2_501" class="frame-2_501">
+      <div id="2_502" class="vector-2_502"></div>
+      <div id="21_928" class="frame-21_928"></div>
+      <div id="2_503" class="vector-2_503"></div>
+      <div id="2_509" class="group-2_509">
+        <span id="2_510" class="text-2_510 fill-white-2_882-text">Антипин Ярослав</span>
+        <span id="2_511" class="text-2_511 fill-white-2_882-text">Владелец</span>
+        <span id="2_512" class="text-2_512 fill-white-2_882-text">Скидка</span>
+        <span id="2_513" class="text-2_513 fill-white-2_882-text">7%</span>
+        <span id="2_514" class="text-2_514">3455 4562 7710 3507</span>
+      </div>
+      <div id="2_516" class="group-2_516">
+        <div id="2_517" class="rectangle-2_517 stroke-neutralswhite-2_881"></div>
+        <div id="2_518" class="vector-2_518"></div>
+        <div id="2_519" class="vector-2_519"></div>
+      </div>
+      <div id="2_520" class="frame-2_520">
+        <div id="50_1" class="vector-50_1"></div>
+      </div>
+      <div id="2_1356" class="frame-2_1356">
+        <div id="2_1357" class="vector-2_1357"></div>
+        <div id="2_1358" class="vector-2_1358"></div>
+        <div id="2_1359" class="vector-2_1359"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+
+</script>
+
+</body>
+</html>

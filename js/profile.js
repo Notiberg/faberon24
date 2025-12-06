@@ -1,0 +1,401 @@
+// Load user data on page load
+document.addEventListener('DOMContentLoaded', async () => {
+  loadUserCredentials();
+  
+  // If no user ID, use test credentials
+  if (!currentUserID) {
+    console.log('No user logged in, using test credentials');
+    setUserCredentials(123456789, 'client');
+  }
+  
+  try {
+    // Load user data from backend
+    const user = await getCurrentUser();
+    
+    // Update profile section
+    document.getElementById('62_1445').textContent = user.name;
+    document.getElementById('62_1446').textContent = `тел. ${user.phone_number}`;
+    
+    // Update cars list
+    updateCarsListFromBackend(user.cars);
+    
+  } catch (error) {
+    console.error('Failed to load user data:', error);
+    // Show error to user
+    alert('Ошибка при загрузке данных профиля: ' + error.message);
+  }
+});
+
+// Helper function to update cars list from backend
+function updateCarsListFromBackend(cars) {
+  const carDropdownMenu = document.getElementById('car-dropdown-menu');
+  
+  // Clear existing items
+  carDropdownMenu.innerHTML = '';
+  
+  // Add cars from backend
+  cars.forEach(car => {
+    const carKey = `${car.brand} ${car.model} - ${car.license_plate}`;
+    const option = document.createElement('div');
+    option.className = 'car-dropdown-item';
+    option.textContent = carKey;
+    option.onclick = () => selectCarFromBackend(car.id, carKey);
+    carDropdownMenu.appendChild(option);
+    
+    // If this car is selected, update the display
+    if (car.is_selected) {
+      document.getElementById('62_1468').textContent = carKey;
+      document.getElementById('62_1457').textContent = car.brand;
+      document.getElementById('62_1458').textContent = car.model;
+      document.getElementById('62_1459').textContent = car.license_plate;
+      document.getElementById('62_1462').textContent = car.size || 'Неизвестно';
+      window.currentCarID = car.id;
+    }
+  });
+}
+
+// Add Car Modal Functions
+const addCarModal = document.getElementById('add-car-modal');
+const addCarForm = document.getElementById('add-car-form');
+const addCarButton = document.getElementById('62_1474');
+let addCarLastClickTime = 0;
+const ADD_CAR_CLICK_DELAY = 300; // milliseconds
+
+function openAddCarModal() {
+  const now = Date.now();
+  if (now - addCarLastClickTime < ADD_CAR_CLICK_DELAY) {
+    return; // Prevent rapid clicks
+  }
+  addCarLastClickTime = now;
+  
+  addCarModal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+  document.body.classList.add('modal-open');
+}
+
+function closeAddCarModal() {
+  addCarModal.classList.remove('active');
+  document.body.style.overflow = 'auto';
+  document.body.classList.remove('modal-open');
+  addCarForm.reset();
+}
+
+async function handleAddCar(event) {
+  event.preventDefault();
+  
+  const brand = document.getElementById('car-brand').value;
+  const model = document.getElementById('car-model').value;
+  const number = document.getElementById('car-number').value;
+  
+  try {
+    // Create car in backend
+    const newCar = await createCar({
+      brand: brand,
+      model: model,
+      licensePlate: number,
+      color: null,
+      size: null
+    });
+    
+    // Reload user data to update cars list
+    const user = await getCurrentUser();
+    updateCarsListFromBackend(user.cars);
+    
+    closeAddCarModal();
+    alert(`Автомобиль ${brand} ${model} успешно добавлен!`);
+    
+  } catch (error) {
+    console.error('Failed to add car:', error);
+    alert('Ошибка при добавлении автомобиля: ' + error.message);
+  }
+}
+
+// Add click listener to add car button
+if (addCarButton) {
+  addCarButton.addEventListener('click', (e) => {
+    e.stopPropagation();
+    openAddCarModal();
+  });
+}
+
+// Close modal when clicking outside
+addCarModal.addEventListener('click', (e) => {
+  if (e.target === addCarModal) {
+    closeAddCarModal();
+  }
+});
+
+// Close modal on Escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && addCarModal.classList.contains('active')) {
+    closeAddCarModal();
+  }
+});
+
+// Car Dropdown Menu Functions
+const carDropdownButton = document.getElementById('62_1463');
+const carDropdownMenu = document.getElementById('car-dropdown-menu');
+let dropdownOpen = false;
+
+function toggleCarDropdown() {
+  dropdownOpen = !dropdownOpen;
+  if (dropdownOpen) {
+    carDropdownMenu.classList.add('active');
+  } else {
+    carDropdownMenu.classList.remove('active');
+  }
+}
+
+async function selectCarFromBackend(carID, carName) {
+  try {
+    // Select car in backend
+    await selectCar(carID);
+    
+    // Update UI
+    const carText = document.getElementById('62_1468');
+    carText.textContent = carName;
+    
+    // Reload user data to update selected car
+    const user = await getCurrentUser();
+    updateCarsListFromBackend(user.cars);
+    
+    dropdownOpen = false;
+    carDropdownMenu.classList.remove('active');
+    console.log('Выбран автомобиль:', carName);
+    
+  } catch (error) {
+    console.error('Failed to select car:', error);
+    alert('Ошибка при выборе автомобиля: ' + error.message);
+  }
+}
+
+// Add click listener to dropdown button
+if (carDropdownButton) {
+  carDropdownButton.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleCarDropdown();
+  });
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+  if (!carDropdownButton.contains(e.target) && !carDropdownMenu.contains(e.target)) {
+    if (dropdownOpen) {
+      dropdownOpen = false;
+      carDropdownMenu.classList.remove('active');
+    }
+  }
+});
+
+// Edit Car Modal Functions
+const editCarModal = document.getElementById('edit-car-modal');
+const editCarForm = document.getElementById('edit-car-form');
+const editCarButton = document.getElementById('62_1455');
+let editCarLastClickTime = 0;
+const EDIT_CAR_CLICK_DELAY = 300; // milliseconds
+
+function openEditCarModal() {
+  const now = Date.now();
+  if (now - editCarLastClickTime < EDIT_CAR_CLICK_DELAY) {
+    return; // Prevent rapid clicks
+  }
+  editCarLastClickTime = now;
+  
+  // Populate form with current car data
+  const brand = document.getElementById('62_1457').textContent;
+  const model = document.getElementById('62_1458').textContent;
+  const number = document.getElementById('62_1459').textContent;
+  const carClass = document.getElementById('62_1462').textContent;
+  
+  document.getElementById('edit-car-brand').value = brand;
+  document.getElementById('edit-car-model').value = model;
+  document.getElementById('edit-car-number').value = number;
+  document.getElementById('edit-car-class').value = carClass;
+  
+  editCarModal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+  document.body.classList.add('modal-open');
+}
+
+function closeEditCarModal() {
+  editCarModal.classList.remove('active');
+  document.body.style.overflow = 'auto';
+  document.body.classList.remove('modal-open');
+  editCarForm.reset();
+}
+
+async function handleEditCar(event) {
+  event.preventDefault();
+  
+  const brand = document.getElementById('edit-car-brand').value;
+  const model = document.getElementById('edit-car-model').value;
+  const number = document.getElementById('edit-car-number').value;
+  const carClass = document.getElementById('edit-car-class').value;
+  
+  try {
+    // Update car in backend
+    const currentCarID = window.currentCarID;
+    await updateCar(currentCarID, {
+      size: carClass
+    });
+    
+    // Reload user data to update cars list
+    const user = await getCurrentUser();
+    updateCarsListFromBackend(user.cars);
+    
+    closeEditCarModal();
+    alert(`Автомобиль ${brand} ${model} успешно обновлен!`);
+    
+  } catch (error) {
+    console.error('Failed to update car:', error);
+    alert('Ошибка при обновлении автомобиля: ' + error.message);
+  }
+}
+
+async function handleDeleteCar() {
+  if (confirm('Вы уверены, что хотите удалить этот автомобиль?')) {
+    try {
+      const currentCarID = window.currentCarID;
+      
+      // Delete car from backend
+      await deleteCar(currentCarID);
+      
+      // Reload user data to update cars list
+      const user = await getCurrentUser();
+      updateCarsListFromBackend(user.cars);
+      
+      closeEditCarModal();
+      alert('Автомобиль успешно удален!');
+      
+    } catch (error) {
+      console.error('Failed to delete car:', error);
+      alert('Ошибка при удалении автомобиля: ' + error.message);
+    }
+  }
+}
+
+// Add click listener to edit car button
+if (editCarButton) {
+  editCarButton.addEventListener('click', (e) => {
+    e.stopPropagation();
+    openEditCarModal();
+  });
+}
+
+// Close modal when clicking outside
+editCarModal.addEventListener('click', (e) => {
+  if (e.target === editCarModal) {
+    closeEditCarModal();
+  }
+});
+
+// Close modal on Escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && editCarModal.classList.contains('active')) {
+    closeEditCarModal();
+  }
+});
+
+// Profile Settings Modal Functions
+const profileSettingsModal = document.getElementById('profile-settings-modal');
+const profileSettingsForm = document.getElementById('profile-settings-form');
+const profileSettingsButton = document.getElementById('62_1450');
+let profileSettingsLastClickTime = 0;
+const PROFILE_SETTINGS_CLICK_DELAY = 300; // milliseconds
+
+function openProfileSettingsModal() {
+  const now = Date.now();
+  if (now - profileSettingsLastClickTime < PROFILE_SETTINGS_CLICK_DELAY) {
+    return; // Prevent rapid clicks
+  }
+  profileSettingsLastClickTime = now;
+  
+  // Populate form with current profile data
+  const fullName = document.getElementById('62_1445').textContent;
+  const nameParts = fullName.split(' ');
+  const firstName = nameParts[0] || '';
+  const lastName = nameParts.slice(1).join(' ') || '';
+  const phone = document.getElementById('62_1446').textContent.replace('тел. ', '');
+  
+  document.getElementById('profile-first-name').value = firstName;
+  document.getElementById('profile-last-name').value = lastName;
+  document.getElementById('profile-phone').value = phone;
+  
+  profileSettingsModal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+  document.body.classList.add('modal-open');
+}
+
+function closeProfileSettingsModal() {
+  profileSettingsModal.classList.remove('active');
+  document.body.style.overflow = 'auto';
+  document.body.classList.remove('modal-open');
+  profileSettingsForm.reset();
+}
+
+function handleAvatarChange(event) {
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const avatarPreview = document.getElementById('avatar-preview-img');
+      avatarPreview.src = e.target.result;
+      
+      // Also update the main avatar in the profile
+      document.getElementById('62_1443').style.backgroundImage = `url('${e.target.result}')`;
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+async function handleProfileSettingsSubmit(event) {
+  event.preventDefault();
+  
+  const firstName = document.getElementById('profile-first-name').value;
+  const lastName = document.getElementById('profile-last-name').value;
+  const phone = document.getElementById('profile-phone').value;
+  
+  try {
+    // Update profile in backend
+    await updateCurrentUser({
+      name: `${firstName} ${lastName}`,
+      phone_number: phone
+    });
+    
+    // Update UI
+    const fullName = `${firstName} ${lastName}`;
+    document.getElementById('62_1445').textContent = fullName;
+    document.getElementById('62_1446').textContent = `тел. ${phone}`;
+    
+    closeProfileSettingsModal();
+    alert(`Профиль успешно обновлен!`);
+    
+  } catch (error) {
+    console.error('Failed to update profile:', error);
+    alert('Ошибка при обновлении профиля: ' + error.message);
+  }
+}
+
+// Add click listener to profile settings button
+if (profileSettingsButton) {
+  profileSettingsButton.addEventListener('click', (e) => {
+    e.stopPropagation();
+    openProfileSettingsModal();
+  });
+}
+
+// Close modal when clicking outside
+profileSettingsModal.addEventListener('click', (e) => {
+  if (e.target === profileSettingsModal) {
+    closeProfileSettingsModal();
+  }
+});
+
+// Close modal on Escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && profileSettingsModal.classList.contains('active')) {
+    closeProfileSettingsModal();
+  }
+});
+
+// Navigation handled by href and onclick attributes

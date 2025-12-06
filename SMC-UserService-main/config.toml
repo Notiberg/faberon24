@@ -1,0 +1,13 @@
+[logs]
+level = "info"
+
+[server]
+http_port = 8080
+
+[database]
+host = "localhost"
+port = 5435
+user = "postgres"
+password = "postgres"
+dbname = "smc_userservice"
+sslmode = "disable"
