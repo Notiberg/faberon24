@@ -154,10 +154,22 @@ function updateCarsListFromBackend(cars) {
     Object.entries(carDisplayElements).forEach(([elementId, value]) => {
       const element = document.getElementById(elementId);
       if (element) {
+        const oldValue = element.textContent;
         element.textContent = value;
-        logger.debug(`Updated element ${elementId}:`, { value });
+        logger.info(`Updated element ${elementId}:`, { oldValue, newValue: value });
+        
+        // Verify the update was successful
+        setTimeout(() => {
+          const verifyElement = document.getElementById(elementId);
+          if (verifyElement && verifyElement.textContent !== value) {
+            logger.error(`Element ${elementId} was not updated correctly!`, { 
+              expected: value, 
+              actual: verifyElement.textContent 
+            });
+          }
+        }, 50);
       } else {
-        logger.warn(`Element ${elementId} not found`);
+        logger.error(`Element ${elementId} not found in DOM`);
       }
     });
     
