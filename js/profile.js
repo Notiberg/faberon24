@@ -1,3 +1,6 @@
+// Flag to prevent multiple simultaneous requests
+let isUpdating = false;
+
 // Function to determine car class based on brand and model
 function determineCarClass(brand, model) {
   const brandLower = brand.toLowerCase();
@@ -242,6 +245,14 @@ function closeAddCarModal() {
 async function handleAddCar(event) {
   event.preventDefault();
   
+  // Prevent multiple simultaneous requests
+  if (isUpdating) {
+    logger.warn('Already updating, please wait');
+    return;
+  }
+  
+  isUpdating = true;
+  
   const brand = document.getElementById('car-brand').value;
   const model = document.getElementById('car-model').value;
   const number = document.getElementById('car-number').value;
@@ -279,6 +290,8 @@ async function handleAddCar(event) {
     const errorInfo = errorHandler.handle(error, 'handleAddCar');
     logger.error('Failed to add car:', errorInfo);
     errorHandler.showNotification(errorInfo.userMessage, 'error');
+  } finally {
+    isUpdating = false;
   }
 }
 
@@ -385,9 +398,12 @@ function openEditCarModal() {
   const model = document.getElementById('62_1458').textContent;
   const number = document.getElementById('62_1459').textContent;
   
+  // Update input fields
   document.getElementById('edit-car-brand').value = brand;
   document.getElementById('edit-car-model').value = model;
   document.getElementById('edit-car-number').value = number;
+  
+  logger.info('Edit car modal opened', { brand, model, number });
   
   editCarModal.classList.add('active');
   document.body.style.overflow = 'hidden';
@@ -404,6 +420,14 @@ function closeEditCarModal() {
 async function handleEditCar(event) {
   event.preventDefault();
   
+  // Prevent multiple simultaneous requests
+  if (isUpdating) {
+    logger.warn('Already updating, please wait');
+    return;
+  }
+  
+  isUpdating = true;
+  
   const brand = document.getElementById('edit-car-brand').value;
   const model = document.getElementById('edit-car-model').value;
   const number = document.getElementById('edit-car-number').value;
@@ -415,7 +439,6 @@ async function handleEditCar(event) {
       return;
     }
     
-    // Update car in backend
     const currentCarID = window.currentCarID;
     
     if (!currentCarID) {
@@ -441,11 +464,21 @@ async function handleEditCar(event) {
     const errorInfo = errorHandler.handle(error, 'handleEditCar');
     logger.error('Failed to update car:', errorInfo);
     errorHandler.showNotification(errorInfo.userMessage, 'error');
+  } finally {
+    isUpdating = false;
   }
 }
 
 async function handleDeleteCar() {
   if (confirm('Вы уверены, что хотите удалить этот автомобиль?')) {
+    // Prevent multiple simultaneous requests
+    if (isUpdating) {
+      logger.warn('Already updating, please wait');
+      return;
+    }
+    
+    isUpdating = true;
+    
     try {
       const currentCarID = window.currentCarID;
       
@@ -474,6 +507,8 @@ async function handleDeleteCar() {
       const errorInfo = errorHandler.handle(error, 'handleDeleteCar');
       logger.error('Failed to delete car:', errorInfo);
       errorHandler.showNotification(errorInfo.userMessage, 'error');
+    } finally {
+      isUpdating = false;
     }
   }
 }
