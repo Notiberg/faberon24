@@ -107,15 +107,44 @@ function updateCarsListFromBackend(cars) {
   });
   
   // Update the display with the selected car
+  // If no car is marked as selected, use the first one
+  if (!selectedCar && cars.length > 0) {
+    selectedCar = cars[0];
+    logger.warn('No selected car found, using first car as default');
+  }
+  
   if (selectedCar) {
     const carKey = `${selectedCar.brand} ${selectedCar.model} - ${selectedCar.license_plate}`;
-    document.getElementById('62_1468').textContent = carKey;
-    document.getElementById('62_1457').textContent = selectedCar.brand;
-    document.getElementById('62_1458').textContent = selectedCar.model;
-    document.getElementById('62_1459').textContent = selectedCar.license_plate;
-    document.getElementById('62_1462').textContent = selectedCar.size || 'Неизвестно';
+    
+    // Update all car display elements
+    const carDisplayElements = {
+      '62_1468': carKey,
+      '62_1457': selectedCar.brand,
+      '62_1458': selectedCar.model,
+      '62_1459': selectedCar.license_plate,
+      '62_1462': selectedCar.size || 'Неизвестно'
+    };
+    
+    // Update each element and log
+    Object.entries(carDisplayElements).forEach(([elementId, value]) => {
+      const element = document.getElementById(elementId);
+      if (element) {
+        element.textContent = value;
+        logger.debug(`Updated element ${elementId}:`, { value });
+      } else {
+        logger.warn(`Element ${elementId} not found`);
+      }
+    });
+    
     window.currentCarID = selectedCar.id;
-    logger.info('Selected car updated', { carID: selectedCar.id, brand: selectedCar.brand, model: selectedCar.model });
+    logger.info('Selected car updated', { 
+      carID: selectedCar.id, 
+      brand: selectedCar.brand, 
+      model: selectedCar.model,
+      licensePlate: selectedCar.license_plate
+    });
+  } else {
+    logger.warn('No car to display');
   }
   
   logger.info('Cars list updated', { count: cars.length });
