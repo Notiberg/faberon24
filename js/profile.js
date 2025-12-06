@@ -1,3 +1,36 @@
+// Function to determine car class based on brand and model
+function determineCarClass(brand, model) {
+  const brandLower = brand.toLowerCase();
+  const modelLower = model.toLowerCase();
+  
+  // Luxury brands - Class A
+  const luxuryBrands = ['rolls-royce', 'bentley', 'maybach', 'lamborghini', 'ferrari', 'porsche'];
+  if (luxuryBrands.some(b => brandLower.includes(b))) {
+    return 'A';
+  }
+  
+  // Premium brands - Class B
+  const premiumBrands = ['mercedes', 'bmw', 'audi', 'jaguar', 'lexus', 'infiniti', 'cadillac', 'lincoln'];
+  if (premiumBrands.some(b => brandLower.includes(b))) {
+    return 'B';
+  }
+  
+  // Mid-range brands - Class C
+  const midRangeBrands = ['volkswagen', 'volvo', 'mazda', 'honda', 'toyota', 'nissan', 'hyundai', 'kia', 'skoda'];
+  if (midRangeBrands.some(b => brandLower.includes(b))) {
+    return 'C';
+  }
+  
+  // Budget brands - Class D
+  const budgetBrands = ['lada', 'chevrolet', 'daewoo', 'geely', 'chery', 'lifan'];
+  if (budgetBrands.some(b => brandLower.includes(b))) {
+    return 'D';
+  }
+  
+  // Default to Class C for unknown brands
+  return 'C';
+}
+
 // Load user data on page load
 document.addEventListener('DOMContentLoaded', async () => {
   try {
@@ -114,25 +147,38 @@ async function handleAddCar(event) {
   const number = document.getElementById('car-number').value;
   
   try {
+    // Validate input
+    if (!brand || !model || !number) {
+      errorHandler.showNotification('Пожалуйста, заполните все поля', 'error');
+      return;
+    }
+    
+    // Determine car class automatically
+    const carClass = determineCarClass(brand, model);
+    logger.info('Car class determined automatically', { brand, model, carClass });
+    
     // Create car in backend
     const newCar = await createCar({
       brand: brand,
       model: model,
       licensePlate: number,
       color: null,
-      size: null
+      size: carClass
     });
+    
+    logger.info('Car created successfully', { brand, model, carClass });
     
     // Reload user data to update cars list
     const user = await getCurrentUser();
     updateCarsListFromBackend(user.cars);
     
     closeAddCarModal();
-    alert(`Автомобиль ${brand} ${model} успешно добавлен!`);
+    errorHandler.showNotification(`Автомобиль ${brand} ${model} (Класс ${carClass}) успешно добавлен!`, 'success');
     
   } catch (error) {
-    console.error('Failed to add car:', error);
-    alert('Ошибка при добавлении автомобиля: ' + error.message);
+    const errorInfo = errorHandler.handle(error, 'handleAddCar');
+    logger.error('Failed to add car:', errorInfo);
+    errorHandler.showNotification(errorInfo.userMessage, 'error');
   }
 }
 
