@@ -37,6 +37,26 @@ function updateCarsListFromBackend(cars) {
   // Clear existing items
   carDropdownMenu.innerHTML = '';
   
+  // Check if there are any cars
+  if (!cars || cars.length === 0) {
+    logger.warn('No cars found for user');
+    const emptyOption = document.createElement('div');
+    emptyOption.className = 'car-dropdown-item';
+    emptyOption.textContent = 'Нет автомобилей';
+    emptyOption.style.opacity = '0.5';
+    emptyOption.style.cursor = 'default';
+    carDropdownMenu.appendChild(emptyOption);
+    
+    // Clear car display
+    document.getElementById('62_1468').textContent = 'Нет автомобилей';
+    document.getElementById('62_1457').textContent = '-';
+    document.getElementById('62_1458').textContent = '-';
+    document.getElementById('62_1459').textContent = '-';
+    document.getElementById('62_1462').textContent = '-';
+    window.currentCarID = null;
+    return;
+  }
+  
   // Add cars from backend
   cars.forEach(car => {
     const carKey = `${car.brand} ${car.model} - ${car.license_plate}`;
@@ -56,6 +76,8 @@ function updateCarsListFromBackend(cars) {
       window.currentCarID = car.id;
     }
   });
+  
+  logger.info('Cars list updated', { count: cars.length });
 }
 
 // Add Car Modal Functions
