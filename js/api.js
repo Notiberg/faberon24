@@ -134,17 +134,32 @@ async function createCar(carData) {
 
 // Update car
 async function updateCar(carID, updateData) {
-  return apiRequest('PATCH', `/users/me/cars/${carID}`, updateData);
+  // Ensure carID is a number
+  const numCarID = parseInt(carID, 10);
+  if (isNaN(numCarID)) {
+    throw new Error('Invalid car ID: must be a number');
+  }
+  return apiRequest('PATCH', `/users/me/cars/${numCarID}`, updateData);
 }
 
 // Delete car
 async function deleteCar(carID) {
-  return apiRequest('DELETE', `/users/me/cars/${carID}`);
+  // Ensure carID is a number
+  const numCarID = parseInt(carID, 10);
+  if (isNaN(numCarID)) {
+    throw new Error('Invalid car ID: must be a number');
+  }
+  return apiRequest('DELETE', `/users/me/cars/${numCarID}`);
 }
 
 // Select car
 async function selectCar(carID) {
-  return apiRequest('PUT', `/users/me/cars/${carID}/select`);
+  // Ensure carID is a number
+  const numCarID = parseInt(carID, 10);
+  if (isNaN(numCarID)) {
+    throw new Error('Invalid car ID: must be a number');
+  }
+  return apiRequest('PUT', `/users/me/cars/${numCarID}/select`);
 }
 
 // Get selected car (internal)
