@@ -1,6 +1,19 @@
 // Flag to prevent multiple simultaneous requests
 let isUpdating = false;
 
+// Timeout for operations (30 seconds)
+const OPERATION_TIMEOUT = 30000;
+
+// Helper function to execute with timeout
+async function executeWithTimeout(promise, timeoutMs = OPERATION_TIMEOUT) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Операция заняла слишком много времени. Пожалуйста, попробуйте еще раз.')), timeoutMs)
+    )
+  ]);
+}
+
 // Function to determine car class based on brand and model
 function determineCarClass(brand, model) {
   const brandLower = brand.toLowerCase();
@@ -268,19 +281,21 @@ async function handleAddCar(event) {
     const carClass = determineCarClass(brand, model);
     logger.info('Car class determined automatically', { brand, model, carClass });
     
-    // Create car in backend
-    const newCar = await createCar({
-      brand: brand,
-      model: model,
-      licensePlate: number,
-      color: null,
-      size: carClass
-    });
+    // Create car in backend with timeout
+    const newCar = await executeWithTimeout(
+      createCar({
+        brand: brand,
+        model: model,
+        licensePlate: number,
+        color: null,
+        size: carClass
+      })
+    );
     
     logger.info('Car created successfully', { brand, model, carClass });
     
-    // Reload user data to update cars list
-    const user = await getCurrentUser();
+    // Reload user data to update cars list with timeout
+    const user = await executeWithTimeout(getCurrentUser());
     updateCarsListFromBackend(user.cars);
     
     closeAddCarModal();
@@ -453,8 +468,8 @@ async function handleEditCar(event) {
     // So we don't send them to the backend
     // Only size/class can be updated, but we're not allowing that in the UI anymore
     
-    // For now, we just reload the data to ensure UI is in sync with backend
-    const user = await getCurrentUser();
+    // For now, we just reload the data to ensure UI is in sync with backend with timeout
+    const user = await executeWithTimeout(getCurrentUser());
     updateCarsListFromBackend(user.cars);
     
     closeEditCarModal();
@@ -491,13 +506,13 @@ async function handleDeleteCar() {
       
       logger.info('Deleting car', { carID: currentCarID });
       
-      // Delete car from backend
-      await deleteCar(currentCarID);
+      // Delete car from backend with timeout
+      await executeWithTimeout(deleteCar(currentCarID));
       
       logger.info('Car deleted successfully');
       
-      // Reload user data to update cars list
-      const user = await getCurrentUser();
+      // Reload user data to update cars list with timeout
+      const user = await executeWithTimeout(getCurrentUser());
       updateCarsListFromBackend(user.cars);
       
       closeEditCarModal();
