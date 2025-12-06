@@ -158,16 +158,42 @@ function updateCarsListFromBackend(cars) {
         element.textContent = value;
         logger.info(`Updated element ${elementId}:`, { oldValue, newValue: value });
         
-        // Verify the update was successful
+        // Watch for changes to this element
+        const observer = new MutationObserver((mutations) => {
+          mutations.forEach((mutation) => {
+            if (mutation.type === 'characterData' || mutation.type === 'childList') {
+              const currentValue = element.textContent;
+              if (currentValue !== value) {
+                logger.warn(`Element ${elementId} was changed after update!`, { 
+                  expected: value, 
+                  actual: currentValue,
+                  mutation: mutation.type
+                });
+                // Restore the correct value
+                element.textContent = value;
+              }
+            }
+          });
+        });
+        
+        observer.observe(element, {
+          characterData: true,
+          childList: true,
+          subtree: true
+        });
+        
+        // Verify the update was successful after a delay
         setTimeout(() => {
           const verifyElement = document.getElementById(elementId);
           if (verifyElement && verifyElement.textContent !== value) {
-            logger.error(`Element ${elementId} was not updated correctly!`, { 
+            logger.error(`Element ${elementId} was overwritten!`, { 
               expected: value, 
               actual: verifyElement.textContent 
             });
+            // Force update
+            verifyElement.textContent = value;
           }
-        }, 50);
+        }, 100);
       } else {
         logger.error(`Element ${elementId} not found in DOM`);
       }
