@@ -205,6 +205,13 @@ function openEditCarModal() {
   }
   editCarLastClickTime = now;
   
+  // Check if currentCarID is set
+  if (!window.currentCarID) {
+    logger.warn('No car selected for editing');
+    errorHandler.showNotification('Пожалуйста, выберите автомобиль для редактирования', 'error');
+    return;
+  }
+  
   // Populate form with current car data
   const brand = document.getElementById('62_1457').textContent;
   const model = document.getElementById('62_1458').textContent;
@@ -239,20 +246,32 @@ async function handleEditCar(event) {
   try {
     // Update car in backend
     const currentCarID = window.currentCarID;
+    
+    if (!currentCarID) {
+      logger.error('Cannot update car: currentCarID is not set');
+      errorHandler.showNotification('Ошибка: автомобиль не выбран', 'error');
+      return;
+    }
+    
+    logger.info('Updating car', { carID: currentCarID, brand, model });
+    
     await updateCar(currentCarID, {
       size: carClass
     });
+    
+    logger.info('Car updated successfully');
     
     // Reload user data to update cars list
     const user = await getCurrentUser();
     updateCarsListFromBackend(user.cars);
     
     closeEditCarModal();
-    alert(`Автомобиль ${brand} ${model} успешно обновлен!`);
+    errorHandler.showNotification(`Автомобиль ${brand} ${model} успешно обновлен!`, 'success');
     
   } catch (error) {
-    console.error('Failed to update car:', error);
-    alert('Ошибка при обновлении автомобиля: ' + error.message);
+    const errorInfo = errorHandler.handle(error, 'handleEditCar');
+    logger.error('Failed to update car:', errorInfo);
+    errorHandler.showNotification(errorInfo.userMessage, 'error');
   }
 }
 
@@ -261,19 +280,31 @@ async function handleDeleteCar() {
     try {
       const currentCarID = window.currentCarID;
       
+      // Check if currentCarID is valid
+      if (!currentCarID) {
+        logger.error('Cannot delete car: currentCarID is not set');
+        errorHandler.showNotification('Ошибка: автомобиль не выбран', 'error');
+        return;
+      }
+      
+      logger.info('Deleting car', { carID: currentCarID });
+      
       // Delete car from backend
       await deleteCar(currentCarID);
+      
+      logger.info('Car deleted successfully');
       
       // Reload user data to update cars list
       const user = await getCurrentUser();
       updateCarsListFromBackend(user.cars);
       
       closeEditCarModal();
-      alert('Автомобиль успешно удален!');
+      errorHandler.showNotification('Автомобиль успешно удален!', 'success');
       
     } catch (error) {
-      console.error('Failed to delete car:', error);
-      alert('Ошибка при удалении автомобиля: ' + error.message);
+      const errorInfo = errorHandler.handle(error, 'handleDeleteCar');
+      logger.error('Failed to delete car:', errorInfo);
+      errorHandler.showNotification(errorInfo.userMessage, 'error');
     }
   }
 }
