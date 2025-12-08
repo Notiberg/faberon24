@@ -69,7 +69,7 @@ func (s *Service) CreateUser(ctx context.Context, input models.CreateUserInputDT
 	return response, nil
 }
 
-// UpdateUser обновляет данные пользователя
+// UpdateUser обновляет данные пользователя (частичное обновление)
 func (s *Service) UpdateUser(ctx context.Context, tgID int64, input models.UpdateUserInputDTO) (*models.UserDTO, error) {
 	user, err := s.userRepo.GetByTGID(ctx, tgID)
 	if err != nil {
@@ -79,9 +79,16 @@ func (s *Service) UpdateUser(ctx context.Context, tgID int64, input models.Updat
 		return nil, fmt.Errorf("%w: %v", ErrServiceGetUser, err)
 	}
 
-	user.Name = input.Name
-	user.PhoneNumber = input.PhoneNumber
-	user.TGLink = input.TGLink
+	// Обновляем только те поля, которые переданы
+	if input.Name != nil {
+		user.Name = *input.Name
+	}
+	if input.PhoneNumber != nil {
+		user.PhoneNumber = input.PhoneNumber
+	}
+	if input.TGLink != nil {
+		user.TGLink = input.TGLink
+	}
 
 	if err = s.userRepo.Update(ctx, user); err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrServiceUpdateUser, err)
@@ -175,17 +182,26 @@ func (s *Service) GetUserWithCars(ctx context.Context, tgID int64) (*models.User
 	return response, nil
 }
 
+// GetSuperUsers возвращает список tg_user_id всех суперпользователей
+func (s *Service) GetSuperUsers(ctx context.Context) ([]int64, error) {
+	userIDs, err := s.userRepo.GetSuperUsers(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrServiceGetUser, err)
+	}
+	return userIDs, nil
+}
+
 // roleToID маппит роль в ID для БД
 func roleToID(role domain.Role) int {
 	switch role {
 	case domain.RoleClient:
-		return 1
+		return domain.RoleIDClient
 	case domain.RoleManager:
-		return 2
+		return domain.RoleIDManager
 	case domain.RoleSuperUser:
-		return 3
+		return domain.RoleIDSuperUser
 	default:
-		return 1 // default client
+		return domain.RoleIDClient // default client
 	}
 }
 

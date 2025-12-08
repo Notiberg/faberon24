@@ -1170,19 +1170,3 @@ body.modal-open .scroll-container-0_1 {
 .profile-settings-submit-btn:active {
   transform: translateY(0);
 }
-
-/* Fix car display elements - override flex display for text elements */
-#62_1457,
-#62_1458,
-#62_1459,
-#62_1461,
-#62_1462,
-#62_1468 {
-  display: inline !important;
-  flex-direction: unset !important;
-  justify-content: unset !important;
-  align-items: unset !important;
-  white-space: normal !important;
-  word-wrap: break-word !important;
-  overflow-wrap: break-word !important;
-}

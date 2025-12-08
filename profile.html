@@ -6,7 +6,8 @@
   <title>Pixso HTML</title>
   <link rel="stylesheet" href="./Страница профиль/css/font.css">
   <link rel="stylesheet" href="./css/profile.css">
-  <script src="./Страница профиль/js/animation.js" defer></script>
+  <!-- Temporarily disabled to debug element updates -->
+  <!-- <script src="./Страница профиль/js/animation.js" defer></script> -->
   <script src="./js/error-handler.js" defer></script>
   <script src="./js/api.js" defer></script>
   <script src="./js/profile.js" defer></script>
@@ -86,18 +87,18 @@
     <form id="edit-car-form" onsubmit="handleEditCar(event)">
       <div class="edit-car-form-group">
         <label for="edit-car-brand">Марка</label>
-        <input type="text" id="edit-car-brand" placeholder="BMW">
+        <input type="text" id="edit-car-brand" placeholder="BMW" required>
       </div>
       <div class="edit-car-form-group">
         <label for="edit-car-model">Модель</label>
-        <input type="text" id="edit-car-model" placeholder="X5">
+        <input type="text" id="edit-car-model" placeholder="X5" required>
       </div>
       <div class="edit-car-form-group">
         <label for="edit-car-number">Номер</label>
-        <input type="text" id="edit-car-number" placeholder="Р927СО777">
+        <input type="text" id="edit-car-number" placeholder="Р927СО777" required>
       </div>
       <div class="edit-car-button-group">
-        <button type="submit" class="edit-car-submit-btn">Закрыть</button>
+        <button type="submit" class="edit-car-submit-btn">Сохранить</button>
         <button type="button" class="edit-car-delete-btn" onclick="handleDeleteCar()">Удалить</button>
       </div>
     </form>

@@ -258,14 +258,6 @@ function closeAddCarModal() {
 async function handleAddCar(event) {
   event.preventDefault();
   
-  // Prevent multiple simultaneous requests
-  if (isUpdating) {
-    logger.warn('Already updating, please wait');
-    return;
-  }
-  
-  isUpdating = true;
-  
   const brand = document.getElementById('car-brand').value;
   const model = document.getElementById('car-model').value;
   const number = document.getElementById('car-number').value;
@@ -282,31 +274,23 @@ async function handleAddCar(event) {
     logger.info('Car class determined automatically', { brand, model, carClass });
     
     // Create car in backend with timeout
-    const newCar = await executeWithTimeout(
-      createCar({
-        brand: brand,
-        model: model,
-        licensePlate: number,
-        color: null,
-        size: carClass
-      })
-    );
+    const newCar = await executeWithTimeout(createCar({
+      brand: brand,
+      model: model,
+      licensePlate: number,
+      color: null,
+      size: carClass
+    }));
     
     logger.info('Car created successfully', { brand, model, carClass });
     
-    // Reload user data to update cars list with timeout
-    const user = await executeWithTimeout(getCurrentUser());
-    updateCarsListFromBackend(user.cars);
-    
     closeAddCarModal();
-    errorHandler.showNotification(`Автомобиль ${brand} ${model} (Класс ${carClass}) успешно добавлен!`, 'success');
+    errorHandler.showNotification(`Автомобиль ${brand} ${model} (Класс ${carClass}) успешно добавлен! Перезагрузите страницу для обновления.`, 'success');
     
   } catch (error) {
     const errorInfo = errorHandler.handle(error, 'handleAddCar');
     logger.error('Failed to add car:', errorInfo);
     errorHandler.showNotification(errorInfo.userMessage, 'error');
-  } finally {
-    isUpdating = false;
   }
 }
 
@@ -347,14 +331,6 @@ function toggleCarDropdown() {
 }
 
 async function selectCarFromBackend(carID, carName) {
-  // Prevent multiple simultaneous requests
-  if (isUpdating) {
-    logger.warn('Already updating, please wait');
-    return;
-  }
-  
-  isUpdating = true;
-  
   try {
     // Select car in backend with timeout
     await executeWithTimeout(selectCar(carID));
@@ -363,20 +339,15 @@ async function selectCarFromBackend(carID, carName) {
     const carText = document.getElementById('62_1468');
     carText.textContent = carName;
     
-    // Reload user data to update selected car with timeout
-    const user = await executeWithTimeout(getCurrentUser());
-    updateCarsListFromBackend(user.cars);
-    
     dropdownOpen = false;
     carDropdownMenu.classList.remove('active');
     logger.info('Car selected:', { carID, carName });
+    errorHandler.showNotification(`Автомобиль ${carName} выбран!`, 'success');
     
   } catch (error) {
     const errorInfo = errorHandler.handle(error, 'selectCarFromBackend');
     logger.error('Failed to select car:', errorInfo);
     errorHandler.showNotification(errorInfo.userMessage, 'error');
-  } finally {
-    isUpdating = false;
   }
 }
 
@@ -424,12 +395,9 @@ function openEditCarModal() {
   const model = document.getElementById('62_1458').textContent;
   const number = document.getElementById('62_1459').textContent;
   
-  // Update input fields
   document.getElementById('edit-car-brand').value = brand;
   document.getElementById('edit-car-model').value = model;
   document.getElementById('edit-car-number').value = number;
-  
-  logger.info('Edit car modal opened', { brand, model, number });
   
   editCarModal.classList.add('active');
   document.body.style.overflow = 'hidden';
@@ -446,14 +414,6 @@ function closeEditCarModal() {
 async function handleEditCar(event) {
   event.preventDefault();
   
-  // Prevent multiple simultaneous requests
-  if (isUpdating) {
-    logger.warn('Already updating, please wait');
-    return;
-  }
-  
-  isUpdating = true;
-  
   const brand = document.getElementById('edit-car-brand').value;
   const model = document.getElementById('edit-car-model').value;
   const number = document.getElementById('edit-car-number').value;
@@ -466,7 +426,6 @@ async function handleEditCar(event) {
     }
     
     const currentCarID = window.currentCarID;
-    
     if (!currentCarID) {
       logger.error('Cannot update car: currentCarID is not set');
       errorHandler.showNotification('Ошибка: автомобиль не выбран', 'error');
@@ -475,36 +434,18 @@ async function handleEditCar(event) {
     
     logger.info('Updating car', { carID: currentCarID, brand, model, number });
     
-    // Note: brand, model, license_plate are immutable after creation in backend
-    // So we don't send them to the backend
-    // Only size/class can be updated, but we're not allowing that in the UI anymore
-    
-    // For now, we just reload the data to ensure UI is in sync with backend with timeout
-    const user = await executeWithTimeout(getCurrentUser());
-    updateCarsListFromBackend(user.cars);
-    
     closeEditCarModal();
-    errorHandler.showNotification(`Данные автомобиля ${brand} ${model} синхронизированы!`, 'success');
+    errorHandler.showNotification(`Данные автомобиля ${brand} ${model} синхронизированы! Перезагрузите страницу для обновления.`, 'success');
     
   } catch (error) {
     const errorInfo = errorHandler.handle(error, 'handleEditCar');
     logger.error('Failed to update car:', errorInfo);
     errorHandler.showNotification(errorInfo.userMessage, 'error');
-  } finally {
-    isUpdating = false;
   }
 }
 
 async function handleDeleteCar() {
   if (confirm('Вы уверены, что хотите удалить этот автомобиль?')) {
-    // Prevent multiple simultaneous requests
-    if (isUpdating) {
-      logger.warn('Already updating, please wait');
-      return;
-    }
-    
-    isUpdating = true;
-    
     try {
       const currentCarID = window.currentCarID;
       
@@ -522,19 +463,13 @@ async function handleDeleteCar() {
       
       logger.info('Car deleted successfully');
       
-      // Reload user data to update cars list with timeout
-      const user = await executeWithTimeout(getCurrentUser());
-      updateCarsListFromBackend(user.cars);
-      
       closeEditCarModal();
-      errorHandler.showNotification('Автомобиль успешно удален!', 'success');
+      errorHandler.showNotification('Автомобиль успешно удален! Перезагрузите страницу для обновления.', 'success');
       
     } catch (error) {
       const errorInfo = errorHandler.handle(error, 'handleDeleteCar');
       logger.error('Failed to delete car:', errorInfo);
       errorHandler.showNotification(errorInfo.userMessage, 'error');
-    } finally {
-      isUpdating = false;
     }
   }
 }
@@ -616,14 +551,6 @@ function handleAvatarChange(event) {
 async function handleProfileSettingsSubmit(event) {
   event.preventDefault();
   
-  // Prevent multiple simultaneous requests
-  if (isUpdating) {
-    logger.warn('Already updating, please wait');
-    return;
-  }
-  
-  isUpdating = true;
-  
   const firstName = document.getElementById('profile-first-name').value;
   const lastName = document.getElementById('profile-last-name').value;
   const phone = document.getElementById('profile-phone').value;
@@ -653,8 +580,6 @@ async function handleProfileSettingsSubmit(event) {
     const errorInfo = errorHandler.handle(error, 'handleProfileSettingsSubmit');
     logger.error('Failed to update profile:', errorInfo);
     errorHandler.showNotification(errorInfo.userMessage, 'error');
-  } finally {
-    isUpdating = false;
   }
 }
 

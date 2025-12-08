@@ -59,6 +59,9 @@ make migrate-down
 
 # Полный сброс БД
 make db-reset
+
+# Загрузить тестовые фикстуры (11 пользователей, 7 автомобилей)
+make fixtures
 ```
 
 ### Cleanup Commands
@@ -95,17 +98,18 @@ make clean-all
 1. **Domain Layer** (`internal/domain/`)
    - `user.go` - доменная модель User с db тегами для sqlx
      - Поля: TGUserID, Name, PhoneNumber, TGLink, RoleID, Role, CreatedAt
-     - TGLink и все nullable поля используют указатели
+     - PhoneNumber, TGLink и все nullable поля используют указатели
    - `car.go` - доменная модель Car с db тегами для sqlx
      - Car.ID использует int64 (BIGSERIAL в БД)
      - IsSelected (bool) - флаг выбранного автомобиля
    - `role.go` - ролевая модель и проверки прав доступа
      - Роли: client, manager, superuser
+     - Константы RoleID: RoleIDClient (1), RoleIDManager (2), RoleIDSuperUser (3)
      - Методы: CanAccessUser(), CanModifyUser()
 
 2. **Service Layer** (`internal/service/user/`)
    - `user_service.go` - полная бизнес-логика для User и Car
-     - User: CreateUser, UpdateUser, DeleteUser, GetUserByID, GetUserWithCars
+     - User: CreateUser, UpdateUser, DeleteUser, GetUserByID, GetUserWithCars, GetSuperUsers
      - Car: CreateCar, UpdateCar (PATCH + role), DeleteCar (role), GetSelectedCar, SetSelectedCar
      - Логика выбранного автомобиля:
        - Первый созданный автомобиль автоматически становится выбранным
@@ -118,11 +122,13 @@ make clean-all
      - ErrUserNotFound, ErrUserAlreadyExists, ErrCarNotFound, ErrCarAccessDenied
    - `models/models.go` - все DTO модели (User, Car, UserWithCars)
      - DTOs включают поле role
+     - PhoneNumber является необязательным полем (*string) во всех DTO
 
 3. **Infrastructure Layer** (`internal/infra/storage/`)
    - `user/repository.go` - UserRepository с обработкой ошибок
      - JOIN с таблицей roles для получения имени роли
      - Create/GetByTGID/Update/Delete с поддержкой role_id
+     - GetSuperUsers - получение списка tg_user_id всех суперпользователей
    - `car/repository.go` - CarRepository с обработкой ошибок
      - GetSelectedByUserID - получение выбранного автомобиля
      - UnselectAllByUserID - снятие выбора со всех автомобилей пользователя
@@ -141,6 +147,7 @@ make clean-all
    - `api/select_car/handler.go` - PUT /users/me/cars/{car_id}/select (установка автомобиля как выбранного)
    - `api/get_user_by_id/handler.go` - GET /internal/users/{tg_user_id} (межсервисное взаимодействие)
    - `api/get_selected_car/handler.go` - GET /internal/users/{tg_user_id}/cars/selected (межсервисное взаимодействие, получение выбранного автомобиля по user_id)
+   - `api/get_superusers/handler.go` - GET /internal/users/superusers (межсервисное взаимодействие, получение списка всех суперпользователей)
    - `middleware/auth.go` - упрощённая аутентификация через X-User-ID и X-User-Role
      - Функции: UserIDAuth, GetUserIDFromContext, GetRoleFromContext, RequireSuperUser
    - `middleware/metrics.go` - Prometheus метрики middleware
@@ -205,7 +212,7 @@ Dashboard "SMC UserService - HTTP Metrics" включает:
 
 - **users table**:
   - tg_user_id BIGINT PRIMARY KEY
-  - name, phone_number, tg_link, created_at
+  - name (required), phone_number (nullable), tg_link (nullable), created_at
   - role_id INTEGER FK → roles(id) ON DELETE RESTRICT
   - Index на phone_number
   - Index на role_id
@@ -231,15 +238,16 @@ Dashboard "SMC UserService - HTTP Metrics" включает:
 API реализует OpenAPI спецификацию из `schemas/api/schema.yaml`:
 
 ### Public Endpoints
-- `POST /users` - создание пользователя (с указанием роли)
+- `POST /users` - создание пользователя (с указанием роли, phone_number опционально)
 
 ### Internal Endpoints (для межсервисного взаимодействия)
+- `GET /internal/users/superusers` - получение списка tg_user_id всех суперпользователей
 - `GET /internal/users/{tg_user_id}` - получение пользователя с автомобилями по ID
 - `GET /internal/users/{tg_user_id}/cars/selected` - получение текущего выбранного автомобиля пользователя по его ID
 
 ### Protected Endpoints (требуют X-User-ID и X-User-Role)
 - `GET /users/me` - получение пользователя с автомобилями (включает is_selected для каждого автомобиля)
-- `PUT /users/me` - обновление профиля
+- `PUT /users/me` - частичное обновление профиля (обновляются только переданные поля)
 - `DELETE /users/me` - удаление профиля
 - `POST /users/me/cars` - добавление автомобиля (первый автомобиль автоматически становится выбранным)
 - `PATCH /users/me/cars/{car_id}` - частичное обновление автомобиля
