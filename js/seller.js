@@ -257,6 +257,12 @@ async function deleteService(companyId, serviceId) {
   }
 }
 
+// Calculate price based on duration
+function calculatePrice(duration) {
+  // Price formula: 500 ₽ за 30 минут
+  return Math.round((duration / 30) * 500);
+}
+
 // Load and render services on index page
 async function loadAndRenderServices() {
   try {
@@ -268,15 +274,21 @@ async function loadAndRenderServices() {
       return;
     }
 
-    // For now, use the first company
-    const company = companies[0];
-    logger.info('Using first company', { companyId: company.id, name: company.name });
-
-    // Get services for this company
-    const services = await getServices(company.id);
+    // Collect all services from all companies
+    let allServices = [];
+    for (const company of companies) {
+      const services = await getServices(company.id);
+      if (services && services.length > 0) {
+        // Add company info to each service
+        services.forEach(service => {
+          service.company_name = company.name;
+        });
+        allServices = allServices.concat(services);
+      }
+    }
     
-    if (!services || services.length === 0) {
-      logger.warn('No services found for company');
+    if (allServices.length === 0) {
+      logger.warn('No services found for any company');
       return;
     }
 
@@ -292,18 +304,19 @@ async function loadAndRenderServices() {
     existingCards.forEach(card => card.remove());
 
     // Create service cards from backend data
-    services.forEach(service => {
+    allServices.forEach(service => {
+      const price = calculatePrice(service.average_duration);
       const card = document.createElement('div');
       card.className = 'frame-9_464 service-card';
       card.setAttribute('data-service-id', service.id);
       card.setAttribute('data-service-name', service.name);
-      card.setAttribute('data-service-duration', `${service.average_duration} мин`);
+      card.setAttribute('data-service-price', `${price} ₽`);
       card.setAttribute('data-service-short', service.description || '');
-      card.setAttribute('data-service-full', service.description || '');
+      card.setAttribute('data-service-full', `${service.description || ''}\n\nВремя выполнения: ${service.average_duration} минут\nКомпания: ${service.company_name}`);
       
       card.innerHTML = `
-        <span class="text-2_1366">Время:</span>
-        <span class="service-price-display">${service.average_duration} мин</span>
+        <span class="text-2_1366">Цена:</span>
+        <span class="service-price-display">${price} ₽</span>
         <div class="frame-2_1371">
           <div class="vector-21_9"></div>
         </div>
@@ -311,14 +324,46 @@ async function loadAndRenderServices() {
         <span class="text-2_1369 service-description">${service.description || ''}</span>
       `;
       
+      // Add click handler to open service modal
+      card.addEventListener('click', () => openServiceModal(service.name, `${price} ₽`, service.description || '', `${service.description || ''}\n\nВремя выполнения: ${service.average_duration} минут\nКомпания: ${service.company_name}`));
+      
       servicesGrid.appendChild(card);
     });
 
-    logger.info('Services rendered successfully', { count: services.length });
+    logger.info('Services rendered successfully', { count: allServices.length });
   } catch (error) {
     const errorInfo = errorHandler.handle(error, 'loadAndRenderServices');
     logger.error('Failed to load and render services:', errorInfo);
     errorHandler.showNotification('Не удалось загрузить услуги', 'error');
+  }
+}
+
+// Open service modal
+function openServiceModal(name, price, shortDesc, fullDesc) {
+  const modal = document.getElementById('service-modal');
+  if (!modal) {
+    logger.error('Service modal not found in DOM');
+    return;
+  }
+  
+  const titleEl = document.getElementById('service-modal-name');
+  const priceEl = document.getElementById('service-modal-price');
+  const descEl = document.getElementById('service-modal-description');
+  
+  if (titleEl) titleEl.textContent = name;
+  if (priceEl) priceEl.textContent = price;
+  if (descEl) descEl.textContent = fullDesc;
+  
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+// Close service modal
+function closeServiceModal() {
+  const modal = document.getElementById('service-modal');
+  if (modal) {
+    modal.classList.remove('active');
+    document.body.style.overflow = 'auto';
   }
 }
 
