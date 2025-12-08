@@ -213,25 +213,37 @@ let serviceLastClickTime = 0;
 let serviceLastClickedCard = null;
 const SERVICE_CLICK_DELAY = 300; // milliseconds
 
-function openServiceModal(card) {
-  const now = Date.now();
+function openServiceModal(cardOrName, price, shortDesc, fullDesc) {
+  // Support both old style (card object) and new style (parameters)
+  let serviceName, servicePrice, serviceFull;
   
-  // Prevent rapid clicks on the same card
-  if (now - serviceLastClickTime < SERVICE_CLICK_DELAY) {
-    return;
+  if (typeof cardOrName === 'object' && cardOrName.dataset) {
+    // Old style: card object passed
+    const card = cardOrName;
+    const now = Date.now();
+    
+    // Prevent rapid clicks on the same card
+    if (now - serviceLastClickTime < SERVICE_CLICK_DELAY) {
+      return;
+    }
+    
+    // Prevent accidental double-clicks
+    if (serviceLastClickedCard === card && now - serviceLastClickTime < 500) {
+      return;
+    }
+    
+    serviceLastClickTime = now;
+    serviceLastClickedCard = card;
+    
+    serviceName = card.dataset.serviceName;
+    servicePrice = card.dataset.servicePrice;
+    serviceFull = card.dataset.serviceFull;
+  } else {
+    // New style: parameters passed
+    serviceName = cardOrName;
+    servicePrice = price;
+    serviceFull = fullDesc;
   }
-  
-  // Prevent accidental double-clicks
-  if (serviceLastClickedCard === card && now - serviceLastClickTime < 500) {
-    return;
-  }
-  
-  serviceLastClickTime = now;
-  serviceLastClickedCard = card;
-  
-  const serviceName = card.dataset.serviceName;
-  const servicePrice = card.dataset.servicePrice;
-  const serviceFull = card.dataset.serviceFull;
   
   document.getElementById('service-modal-name').textContent = serviceName;
   document.getElementById('service-modal-price').textContent = servicePrice;
