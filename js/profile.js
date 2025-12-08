@@ -173,43 +173,6 @@ function updateCarsListFromBackend(cars) {
         const oldValue = element.textContent;
         element.textContent = value;
         logger.info(`Updated element ${elementId}:`, { oldValue, newValue: value });
-        
-        // Watch for changes to this element
-        const observer = new MutationObserver((mutations) => {
-          mutations.forEach((mutation) => {
-            if (mutation.type === 'characterData' || mutation.type === 'childList') {
-              const currentValue = element.textContent;
-              if (currentValue !== value) {
-                logger.warn(`Element ${elementId} was changed after update!`, { 
-                  expected: value, 
-                  actual: currentValue,
-                  mutation: mutation.type
-                });
-                // Restore the correct value
-                element.textContent = value;
-              }
-            }
-          });
-        });
-        
-        observer.observe(element, {
-          characterData: true,
-          childList: true,
-          subtree: true
-        });
-        
-        // Verify the update was successful after a delay
-        setTimeout(() => {
-          const verifyElement = document.getElementById(elementId);
-          if (verifyElement && verifyElement.textContent !== value) {
-            logger.error(`Element ${elementId} was overwritten!`, { 
-              expected: value, 
-              actual: verifyElement.textContent 
-            });
-            // Force update
-            verifyElement.textContent = value;
-          }
-        }, 100);
       } else {
         logger.error(`Element ${elementId} not found in DOM`);
       }
@@ -285,7 +248,12 @@ async function handleAddCar(event) {
     logger.info('Car created successfully', { brand, model, carClass });
     
     closeAddCarModal();
-    errorHandler.showNotification(`Автомобиль ${brand} ${model} (Класс ${carClass}) успешно добавлен! Перезагрузите страницу для обновления.`, 'success');
+    errorHandler.showNotification(`Автомобиль ${brand} ${model} (Класс ${carClass}) успешно добавлен!`, 'success');
+    
+    // Reload user data automatically
+    await new Promise(resolve => setTimeout(resolve, 500));
+    const user = await executeWithTimeout(getCurrentUser());
+    updateCarsListFromBackend(user.cars);
     
   } catch (error) {
     const errorInfo = errorHandler.handle(error, 'handleAddCar');
@@ -335,14 +303,16 @@ async function selectCarFromBackend(carID, carName) {
     // Select car in backend with timeout
     await executeWithTimeout(selectCar(carID));
     
-    // Update UI
-    const carText = document.getElementById('62_1468');
-    carText.textContent = carName;
+    logger.info('Car selected:', { carID, carName });
+    errorHandler.showNotification(`Автомобиль ${carName} выбран!`, 'success');
+    
+    // Reload user data automatically
+    await new Promise(resolve => setTimeout(resolve, 500));
+    const user = await executeWithTimeout(getCurrentUser());
+    updateCarsListFromBackend(user.cars);
     
     dropdownOpen = false;
     carDropdownMenu.classList.remove('active');
-    logger.info('Car selected:', { carID, carName });
-    errorHandler.showNotification(`Автомобиль ${carName} выбран!`, 'success');
     
   } catch (error) {
     const errorInfo = errorHandler.handle(error, 'selectCarFromBackend');
@@ -464,7 +434,12 @@ async function handleDeleteCar() {
       logger.info('Car deleted successfully');
       
       closeEditCarModal();
-      errorHandler.showNotification('Автомобиль успешно удален! Перезагрузите страницу для обновления.', 'success');
+      errorHandler.showNotification('Автомобиль успешно удален!', 'success');
+      
+      // Reload user data automatically
+      await new Promise(resolve => setTimeout(resolve, 500));
+      const user = await executeWithTimeout(getCurrentUser());
+      updateCarsListFromBackend(user.cars);
       
     } catch (error) {
       const errorInfo = errorHandler.handle(error, 'handleDeleteCar');
@@ -568,13 +543,20 @@ async function handleProfileSettingsSubmit(event) {
       phone_number: phone
     }));
     
+    logger.info('Profile updated successfully');
+    errorHandler.showNotification(`Профиль успешно обновлен!`, 'success');
+    
+    closeProfileSettingsModal();
+    
+    // Reload user data automatically
+    await new Promise(resolve => setTimeout(resolve, 500));
+    const user = await executeWithTimeout(getCurrentUser());
+    
     // Update UI
     const fullName = `${firstName} ${lastName}`;
     document.getElementById('62_1445').textContent = fullName;
     document.getElementById('62_1446').textContent = `тел. ${phone}`;
-    
-    closeProfileSettingsModal();
-    errorHandler.showNotification(`Профиль успешно обновлен!`, 'success');
+    updateCarsListFromBackend(user.cars);
     
   } catch (error) {
     const errorInfo = errorHandler.handle(error, 'handleProfileSettingsSubmit');
