@@ -217,7 +217,8 @@ function openServiceModal(cardOrName, price, shortDesc, fullDesc) {
   // Support both old style (card object) and new style (parameters)
   let serviceName, servicePrice, serviceFull;
   
-  if (typeof cardOrName === 'object' && cardOrName.dataset) {
+  // Check if first parameter is a card object with dataset
+  if (cardOrName && typeof cardOrName === 'object' && cardOrName.dataset) {
     // Old style: card object passed
     const card = cardOrName;
     const now = Date.now();
@@ -238,19 +239,29 @@ function openServiceModal(cardOrName, price, shortDesc, fullDesc) {
     serviceName = card.dataset.serviceName;
     servicePrice = card.dataset.servicePrice;
     serviceFull = card.dataset.serviceFull;
-  } else {
-    // New style: parameters passed
+  } else if (typeof cardOrName === 'string') {
+    // New style: parameters passed (cardOrName is the service name string)
     serviceName = cardOrName;
     servicePrice = price;
     serviceFull = fullDesc;
+  } else {
+    // Invalid parameters
+    logger.error('openServiceModal: Invalid parameters', { cardOrName, price });
+    return;
   }
   
-  document.getElementById('service-modal-name').textContent = serviceName;
-  document.getElementById('service-modal-price').textContent = servicePrice;
-  document.getElementById('service-modal-description').textContent = serviceFull;
+  const nameEl = document.getElementById('service-modal-name');
+  const priceEl = document.getElementById('service-modal-price');
+  const descEl = document.getElementById('service-modal-description');
   
-  serviceModal.classList.add('active');
-  document.body.classList.add('modal-open');
+  if (nameEl) nameEl.textContent = serviceName;
+  if (priceEl) priceEl.textContent = servicePrice;
+  if (descEl) descEl.textContent = serviceFull;
+  
+  if (serviceModal) {
+    serviceModal.classList.add('active');
+    document.body.classList.add('modal-open');
+  }
 }
 
 function closeServiceModal() {
