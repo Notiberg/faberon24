@@ -263,6 +263,24 @@ function calculatePrice(duration) {
   return Math.round((duration / 30) * 500);
 }
 
+// Get short description (first sentence or first 50 chars)
+function getShortDescription(description) {
+  if (!description) return '';
+  
+  // Try to get first sentence (ends with . ! or ?)
+  const sentenceMatch = description.match(/^[^.!?]*[.!?]/);
+  if (sentenceMatch) {
+    return sentenceMatch[0].trim();
+  }
+  
+  // Otherwise get first 50 characters
+  if (description.length > 50) {
+    return description.substring(0, 50) + '...';
+  }
+  
+  return description;
+}
+
 // Load and render services on index page
 async function loadAndRenderServices() {
   try {
@@ -306,13 +324,16 @@ async function loadAndRenderServices() {
     // Create service cards from backend data
     allServices.forEach(service => {
       const price = calculatePrice(service.average_duration);
+      const shortDesc = getShortDescription(service.description || '');
+      const fullDesc = `${service.description || ''}\n\nВремя выполнения: ${service.average_duration} минут\nКомпания: ${service.company_name}`;
+      
       const card = document.createElement('div');
       card.className = 'frame-9_464 service-card';
       card.setAttribute('data-service-id', service.id);
       card.setAttribute('data-service-name', service.name);
       card.setAttribute('data-service-price', `${price} ₽`);
-      card.setAttribute('data-service-short', service.description || '');
-      card.setAttribute('data-service-full', `${service.description || ''}\n\nВремя выполнения: ${service.average_duration} минут\nКомпания: ${service.company_name}`);
+      card.setAttribute('data-service-short', shortDesc);
+      card.setAttribute('data-service-full', fullDesc);
       
       card.innerHTML = `
         <span class="text-2_1366">Цена:</span>
@@ -321,11 +342,11 @@ async function loadAndRenderServices() {
           <div class="vector-21_9"></div>
         </div>
         <span class="text-2_1365 service-name">${service.name}</span>
-        <span class="text-2_1369 service-description">${service.description || ''}</span>
+        <span class="text-2_1369 service-description">${shortDesc}</span>
       `;
       
       // Add click handler to open service modal
-      card.addEventListener('click', () => openServiceModal(service.name, `${price} ₽`, service.description || '', `${service.description || ''}\n\nВремя выполнения: ${service.average_duration} минут\nКомпания: ${service.company_name}`));
+      card.addEventListener('click', () => openServiceModal(service.name, `${price} ₽`, shortDesc, fullDesc));
       
       servicesGrid.appendChild(card);
     });
