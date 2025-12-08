@@ -16,8 +16,10 @@ async function getCompanies() {
     }
 
     const data = await response.json();
-    logger.info('Companies loaded from backend', { count: data.length });
-    return data || [];
+    // API returns { companies: [...] } format
+    const companies = data.companies || data || [];
+    logger.info('Companies loaded from backend', { count: companies.length });
+    return companies;
   } catch (error) {
     const errorInfo = errorHandler.handle(error, 'getCompanies');
     logger.error('Failed to get companies:', errorInfo);
@@ -64,8 +66,10 @@ async function getServices(companyId) {
     }
 
     const data = await response.json();
-    logger.info('Services loaded from backend', { companyId, count: data.length });
-    return data || [];
+    // API returns { services: [...] } format
+    const services = data.services || data || [];
+    logger.info('Services loaded from backend', { companyId, count: services.length });
+    return services;
   } catch (error) {
     const errorInfo = errorHandler.handle(error, 'getServices');
     logger.error('Failed to get services:', errorInfo);
@@ -293,13 +297,13 @@ async function loadAndRenderServices() {
       card.className = 'frame-9_464 service-card';
       card.setAttribute('data-service-id', service.id);
       card.setAttribute('data-service-name', service.name);
-      card.setAttribute('data-service-price', `от ${service.price} ₽`);
+      card.setAttribute('data-service-duration', `${service.average_duration} мин`);
       card.setAttribute('data-service-short', service.description || '');
-      card.setAttribute('data-service-full', service.full_description || service.description || '');
+      card.setAttribute('data-service-full', service.description || '');
       
       card.innerHTML = `
-        <span class="text-2_1366">Цена:</span>
-        <span class="service-price-display">от ${service.price} ₽</span>
+        <span class="text-2_1366">Время:</span>
+        <span class="service-price-display">${service.average_duration} мин</span>
         <div class="frame-2_1371">
           <div class="vector-21_9"></div>
         </div>
