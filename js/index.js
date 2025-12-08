@@ -259,13 +259,20 @@ function closeServiceModal() {
   serviceLastClickedCard = null;
 }
 
-// Add click listeners to service cards with debounce
-serviceCards.forEach(card => {
-  card.addEventListener('click', (e) => {
-    e.stopPropagation();
-    openServiceModal(card);
+// Add click listeners to service cards
+// Note: Dynamic cards from seller.js will add their own listeners
+// Static cards from HTML will get listeners here
+if (serviceCards && serviceCards.length > 0) {
+  serviceCards.forEach(card => {
+    // Only add listener if card doesn't have data-service-id (dynamic cards have this)
+    if (!card.hasAttribute('data-service-id')) {
+      card.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openServiceModal(card);
+      });
+    }
   });
-});
+}
 
 // Close modal when clicking outside
 serviceModal.addEventListener('click', (e) => {
