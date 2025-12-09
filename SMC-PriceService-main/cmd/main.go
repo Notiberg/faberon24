@@ -116,24 +116,6 @@ func main() {
 	// Настраиваем роутер
 	r := mux.NewRouter()
 
-	// Добавляем CORS middleware
-	r.Use(func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Access-Control-Allow-Origin", "*")
-			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
-			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, X-User-ID, X-User-Role")
-			w.Header().Set("Access-Control-Max-Age", "3600")
-
-			if r.Method == http.MethodOptions {
-				w.WriteHeader(http.StatusOK)
-				return
-			}
-
-			next.ServeHTTP(w, r)
-		})
-	})
-	log.Info("CORS middleware enabled")
-
 	// Добавляем metrics middleware (если метрики включены)
 	if cfg.Metrics.Enabled {
 		r.Use(middleware.MetricsMiddleware(metricsCollector, cfg.Metrics.ServiceName))
@@ -159,15 +141,16 @@ func main() {
 	api.HandleFunc("/pricing-rules/{id}", updatePricingRuleHandler.Handle).Methods(http.MethodPut)
 	api.HandleFunc("/pricing-rules/{id}", deletePricingRuleHandler.Handle).Methods(http.MethodDelete)
 
-	// Создаем HTTP сервер
+	// Создаем HTTP сервер с CORS middleware обёрнутым вокруг роутера
 	addr := fmt.Sprintf(":%d", cfg.Server.HTTPPort)
 	srv := &http.Server{
 		Addr:         addr,
-		Handler:      r,
+		Handler:      corsMiddleware(r),
 		ReadTimeout:  time.Duration(cfg.Server.ReadTimeout) * time.Second,
 		WriteTimeout: time.Duration(cfg.Server.WriteTimeout) * time.Second,
 		IdleTimeout:  time.Duration(cfg.Server.IdleTimeout) * time.Second,
 	}
+	log.Info("CORS middleware enabled")
 
 	// Graceful shutdown
 	go func() {

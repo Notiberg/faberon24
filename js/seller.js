@@ -266,6 +266,9 @@ async function calculatePrice(companyId, serviceId, userId = null) {
   try {
     logger.info('Calculating price', { companyId, serviceId, userId });
     
+    // Convert userId to number if it's a string
+    const numericUserId = userId ? parseInt(userId, 10) : null;
+    
     const response = await fetch(`${PRICE_API_BASE}/prices/calculate`, {
       method: 'POST',
       headers: {
@@ -274,7 +277,7 @@ async function calculatePrice(companyId, serviceId, userId = null) {
       body: JSON.stringify({
         company_id: companyId,
         service_ids: [serviceId],
-        user_id: userId
+        user_id: numericUserId
       })
     });
 
