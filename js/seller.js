@@ -1,5 +1,6 @@
 // Seller Service API functions
 const SELLER_API_BASE = 'http://localhost:8081/api/v1';
+const PRICE_API_BASE = 'http://localhost:8082/api/v1';
 
 // Get all companies
 async function getCompanies() {
@@ -257,10 +258,53 @@ async function deleteService(companyId, serviceId) {
   }
 }
 
-// Calculate price based on duration
-function calculatePrice(duration) {
-  // Price formula: 500 ₽ за 30 минут
-  return Math.round((duration / 30) * 500);
+// Calculate price using PriceService
+async function calculatePrice(companyId, serviceId, userId = null) {
+  try {
+    const response = await fetch(`${PRICE_API_BASE}/prices/calculate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        company_id: companyId,
+        service_ids: [serviceId],
+        user_id: userId
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to calculate price: ${response.status}`);
+    }
+
+    const data = await response.json();
+    if (data.prices && data.prices.length > 0) {
+      const priceInfo = data.prices[0];
+      logger.info('Price calculated from PriceService', { 
+        serviceId, 
+        price: priceInfo.price,
+        vehicleClass: priceInfo.vehicle_class 
+      });
+      return {
+        price: priceInfo.price,
+        vehicleClass: priceInfo.vehicle_class,
+        pricingType: priceInfo.pricing_type
+      };
+    }
+    
+    throw new Error('No price returned from PriceService');
+  } catch (error) {
+    logger.warn('Failed to get price from PriceService, using fallback', { 
+      serviceId, 
+      error: error.message 
+    });
+    // Fallback: return a default price
+    return {
+      price: 500,
+      vehicleClass: null,
+      pricingType: 'fallback'
+    };
+  }
 }
 
 // Get short description (first sentence or first 50 chars)
@@ -322,34 +366,43 @@ async function loadAndRenderServices() {
     existingCards.forEach(card => card.remove());
 
     // Create service cards from backend data
-    allServices.forEach(service => {
-      const price = calculatePrice(service.average_duration);
-      const shortDesc = getShortDescription(service.description || '');
-      const fullDesc = `${service.description || ''}\n\nВремя выполнения: ${service.average_duration} минут\nКомпания: ${service.company_name}`;
-      
-      const card = document.createElement('div');
-      card.className = 'frame-9_464 service-card';
-      card.setAttribute('data-service-id', service.id);
-      card.setAttribute('data-service-name', service.name);
-      card.setAttribute('data-service-price', `${price} ₽`);
-      card.setAttribute('data-service-short', shortDesc);
-      card.setAttribute('data-service-full', fullDesc);
-      
-      card.innerHTML = `
-        <span class="text-2_1366">Цена:</span>
-        <span class="service-price-display">${price} ₽</span>
-        <div class="frame-2_1371">
-          <div class="vector-21_9"></div>
-        </div>
-        <span class="text-2_1365 service-name">${service.name}</span>
-        <span class="text-2_1369 service-description">${shortDesc}</span>
-      `;
-      
-      // Add click handler to open service modal
-      card.addEventListener('click', () => openServiceModal(service.name, `${price} ₽`, shortDesc, fullDesc));
-      
-      servicesGrid.appendChild(card);
-    });
+    for (const service of allServices) {
+      try {
+        // Get current user ID from localStorage (set during login)
+        const userId = window.currentUserId || null;
+        
+        // Calculate price using PriceService
+        const priceInfo = await calculatePrice(service.company_id, service.id, userId);
+        const price = Math.round(priceInfo.price);
+        const shortDesc = getShortDescription(service.description || '');
+        const fullDesc = `${service.description || ''}\n\nВремя выполнения: ${service.average_duration} минут\nКомпания: ${service.company_name}${priceInfo.vehicleClass ? `\nКласс автомобиля: ${priceInfo.vehicleClass}` : ''}`;
+        
+        const card = document.createElement('div');
+        card.className = 'frame-9_464 service-card';
+        card.setAttribute('data-service-id', service.id);
+        card.setAttribute('data-service-name', service.name);
+        card.setAttribute('data-service-price', `${price} ₽`);
+        card.setAttribute('data-service-short', shortDesc);
+        card.setAttribute('data-service-full', fullDesc);
+        
+        card.innerHTML = `
+          <span class="text-2_1366">Цена:</span>
+          <span class="service-price-display">${price} ₽</span>
+          <div class="frame-2_1371">
+            <div class="vector-21_9"></div>
+          </div>
+          <span class="text-2_1365 service-name">${service.name}</span>
+          <span class="text-2_1369 service-description">${shortDesc}</span>
+        `;
+        
+        // Add click handler to open service modal
+        card.addEventListener('click', () => openServiceModal(service.name, `${price} ₽`, shortDesc, fullDesc));
+        
+        servicesGrid.appendChild(card);
+      } catch (error) {
+        logger.error('Failed to create service card', { serviceId: service.id, error: error.message });
+      }
+    }
 
     logger.info('Services rendered successfully', { count: allServices.length });
   } catch (error) {

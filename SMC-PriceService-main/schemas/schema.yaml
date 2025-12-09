@@ -1,0 +1,579 @@
+openapi: 3.0.3
+info:
+  title: Price Service API
+  description: |
+    Сервис расчёта цен для системы онлайн записи на автомойку.
+    Рассчитывает стоимость услуг в зависимости от компании, услуги и автомобиля клиента.
+  version: 1.0.0
+  contact:
+    name: API Support
+
+servers:
+  - url: http://localhost:8082/api/v1
+    description: Local development server
+
+tags:
+  - name: prices
+    description: Операции с расчётом цен
+  - name: pricing-rules
+    description: Управление правилами ценообразования
+
+paths:
+  /prices/calculate:
+    post:
+      tags:
+        - prices
+      summary: Рассчитать цены на услуги (batch)
+      description: |
+        Batch endpoint для расчёта цен на одну или несколько услуг.
+        Цена рассчитывается на основе выбранного автомобиля пользователя.
+        Если автомобиль не выбран, возвращается базовая цена.
+      operationId: calculatePrices
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CalculatePricesRequest'
+            examples:
+              single_service:
+                summary: Расчёт цены на одну услугу
+                value:
+                  company_id: 123
+                  user_id: 456
+                  service_ids: [789]
+              multiple_services:
+                summary: Расчёт цен на несколько услуг
+                value:
+                  company_id: 123
+                  user_id: 456
+                  service_ids: [789, 790, 791]
+              without_user:
+                summary: Расчёт без пользователя (базовые цены)
+                value:
+                  company_id: 123
+                  service_ids: [789, 790]
+      responses:
+        '200':
+          description: Успешный расчёт цен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalculatePricesResponse'
+              examples:
+                with_vehicle:
+                  summary: Цены с учётом автомобиля
+                  value:
+                    prices:
+                      - service_id: 789
+                        price: 1500.00
+                        currency: "RUB"
+                        pricing_type: "vehicle_class_pricing_multiplier"
+                        vehicle_class: "C"
+                        applied_multiplier: 1.2
+                      - service_id: 790
+                        price: 3000.00
+                        currency: "RUB"
+                        pricing_type: "vehicle_class_pricing_fixed"
+                        vehicle_class: "C"
+                base_prices:
+                  summary: Базовые цены
+                  value:
+                    prices:
+                      - service_id: 789
+                        price: 1000.00
+                        currency: "RUB"
+                        pricing_type: "static"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /pricing-rules:
+    post:
+      tags:
+        - pricing-rules
+      summary: Создать правило ценообразования
+      description: Создаёт новое правило расчёта цены для услуги в компании
+      operationId: createPricingRule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePricingRuleRequest'
+            examples:
+              static_price:
+                summary: Статичная цена
+                value:
+                  company_id: 123
+                  service_id: 789
+                  pricing_type: "static"
+                  base_price: 1000.00
+                  currency: "RUB"
+              vehicle_class_pricing_multiplier:
+                summary: Цена по классу автомобиля (множители)
+                value:
+                  company_id: 123
+                  service_id: 789
+                  pricing_type: "vehicle_class_pricing_multiplier"
+                  base_price: 1000.00
+                  currency: "RUB"
+                  vehicle_class_multipliers:
+                    A: 0.8
+                    B: 1.0
+                    C: 1.2
+                    D: 1.5
+                    E: 2.0
+                    F: 2.5
+                    J: 1.8
+                    M: 1.7
+                    S: 2.2
+              vehicle_class_pricing_fixed:
+                summary: Цена по классу автомобиля (фиксированные цены)
+                value:
+                  company_id: 123
+                  service_id: 789
+                  pricing_type: "vehicle_class_pricing_fixed"
+                  base_price: 2000.00
+                  currency: "RUB"
+                  vehicle_class_prices:
+                    A: 1500.00
+                    B: 2000.00
+                    C: 2500.00
+                    D: 3000.00
+                    E: 4000.00
+                    F: 5000.00
+                    J: 3500.00
+                    M: 3200.00
+                    S: 4500.00
+      responses:
+        '201':
+          description: Правило успешно создано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PricingRuleResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    get:
+      tags:
+        - pricing-rules
+      summary: Получить список правил ценообразования
+      description: Возвращает правила с возможностью фильтрации по компании и услуге
+      operationId: listPricingRules
+      parameters:
+        - name: company_id
+          in: query
+          description: ID компании для фильтрации
+          schema:
+            type: integer
+            format: int64
+        - name: service_id
+          in: query
+          description: ID услуги для фильтрации
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Список правил
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListPricingRulesResponse'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /pricing-rules/{id}:
+    get:
+      tags:
+        - pricing-rules
+      summary: Получить правило ценообразования по ID
+      operationId: getPricingRule
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID правила ценообразования
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Правило найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PricingRuleResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    put:
+      tags:
+        - pricing-rules
+      summary: Обновить правило ценообразования
+      operationId: updatePricingRule
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID правила ценообразования
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePricingRuleRequest'
+      responses:
+        '200':
+          description: Правило успешно обновлено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PricingRuleResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    delete:
+      tags:
+        - pricing-rules
+      summary: Удалить правило ценообразования
+      operationId: deletePricingRule
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID правила ценообразования
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Правило успешно удалено
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /health:
+    get:
+      tags:
+        - health
+      summary: Проверка работоспособности сервиса
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Сервис работает
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+
+components:
+  schemas:
+    CalculatePricesRequest:
+      type: object
+      required:
+        - company_id
+        - service_ids
+      properties:
+        company_id:
+          type: integer
+          format: int64
+          description: ID компании
+          example: 123
+        user_id:
+          type: integer
+          format: int64
+          description: ID пользователя (опционально, если не передан - возвращаются базовые цены)
+          example: 456
+        service_ids:
+          type: array
+          description: Список ID услуг для расчёта
+          minItems: 1
+          items:
+            type: integer
+            format: int64
+          example: [789, 790, 791]
+
+    CalculatePricesResponse:
+      type: object
+      properties:
+        prices:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServicePrice'
+
+    ServicePrice:
+      type: object
+      properties:
+        service_id:
+          type: integer
+          format: int64
+          description: ID услуги
+          example: 789
+        price:
+          type: number
+          format: decimal
+          description: Рассчитанная цена
+          example: 1500.00
+        currency:
+          type: string
+          description: Валюта
+          example: "RUB"
+        pricing_type:
+          type: string
+          enum: [static, vehicle_class_pricing_multiplier, vehicle_class_pricing_fixed]
+          description: |
+            Тип ценообразования:
+            - static - статичная цена
+            - vehicle_class_pricing_multiplier - цена по классу автомобиля с множителем
+            - vehicle_class_pricing_fixed - фиксированная цена по классу автомобиля
+          example: "vehicle_class_pricing_multiplier"
+        vehicle_class:
+          type: string
+          enum: [A, B, C, D, E, F, J, M, S]
+          description: |
+            Класс автомобиля согласно европейской системе классов (если применимо):
+            - A — мини-автомобили
+            - B — малые
+            - C — средние (гольф-класс)
+            - D — большие средние
+            - E — бизнес-класс
+            - F — люксовые
+            - J — внедорожники
+            - M — минивэны
+            - S — спорткары
+          example: "C"
+        applied_multiplier:
+          type: number
+          format: decimal
+          description: Применённый множитель (для vehicle_class_pricing_multiplier)
+          example: 1.2
+
+    CreatePricingRuleRequest:
+      type: object
+      required:
+        - company_id
+        - service_id
+        - pricing_type
+        - base_price
+        - currency
+      properties:
+        company_id:
+          type: integer
+          format: int64
+          description: ID компании
+          example: 123
+        service_id:
+          type: integer
+          format: int64
+          description: ID услуги
+          example: 789
+        pricing_type:
+          type: string
+          enum: [static, vehicle_class_pricing_multiplier, vehicle_class_pricing_fixed]
+          description: |
+            Тип ценообразования:
+            - static - статичная цена (использует base_price)
+            - vehicle_class_pricing_multiplier - цена по классу с множителем (использует base_price и vehicle_class_multipliers)
+            - vehicle_class_pricing_fixed - фиксированные цены по классам (использует vehicle_class_prices, base_price как fallback)
+          example: "vehicle_class_pricing_multiplier"
+        base_price:
+          type: number
+          format: decimal
+          description: |
+            Базовая цена (обязательна для всех типов ценообразования).
+            Используется как цена по умолчанию, если у пользователя нет автомобиля или класс не найден в правилах.
+          minimum: 0
+          example: 1000.00
+        currency:
+          type: string
+          description: Валюта (ISO 4217)
+          default: "RUB"
+          example: "RUB"
+        vehicle_class_multipliers:
+          type: object
+          description: |
+            Множители для классов автомобилей (обязательно для pricing_type=vehicle_class_pricing_multiplier).
+            Используется вместе с base_price. Итоговая цена = base_price * multiplier.
+            Классы согласно европейской системе: A, B, C, D, E, F, J, M, S
+          additionalProperties:
+            type: number
+            format: decimal
+          example:
+            A: 0.8
+            B: 1.0
+            C: 1.2
+            D: 1.5
+            E: 2.0
+        vehicle_class_prices:
+          type: object
+          description: |
+            Фиксированные цены для классов автомобилей (обязательно для pricing_type=vehicle_class_pricing_fixed).
+            Классы согласно европейской системе: A, B, C, D, E, F, J, M, S
+          additionalProperties:
+            type: number
+            format: decimal
+          example:
+            A: 1500.00
+            B: 2000.00
+            C: 2500.00
+            D: 3000.00
+            E: 4000.00
+
+    UpdatePricingRuleRequest:
+      type: object
+      properties:
+        pricing_type:
+          type: string
+          enum: [static, vehicle_class_pricing_multiplier, vehicle_class_pricing_fixed]
+          description: Тип ценообразования
+        base_price:
+          type: number
+          format: decimal
+          description: Базовая цена
+          minimum: 0
+        currency:
+          type: string
+          description: Валюта (ISO 4217)
+        vehicle_class_multipliers:
+          type: object
+          description: Множители для классов автомобилей
+          additionalProperties:
+            type: number
+            format: decimal
+        vehicle_class_prices:
+          type: object
+          description: Фиксированные цены для классов автомобилей
+          additionalProperties:
+            type: number
+            format: decimal
+
+    PricingRuleResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: ID правила
+          example: 1
+        company_id:
+          type: integer
+          format: int64
+          description: ID компании
+          example: 123
+        service_id:
+          type: integer
+          format: int64
+          description: ID услуги
+          example: 789
+        pricing_type:
+          type: string
+          enum: [static, vehicle_class_pricing_multiplier, vehicle_class_pricing_fixed]
+          description: Тип ценообразования
+          example: "vehicle_class_pricing_multiplier"
+        base_price:
+          type: number
+          format: decimal
+          description: Базовая цена (используется как fallback для всех типов)
+          example: 1000.00
+        currency:
+          type: string
+          description: Валюта
+          example: "RUB"
+        vehicle_class_multipliers:
+          type: object
+          description: Множители для классов автомобилей
+          nullable: true
+          additionalProperties:
+            type: number
+            format: decimal
+          example:
+            A: 0.8
+            B: 1.0
+            C: 1.2
+        vehicle_class_prices:
+          type: object
+          description: Фиксированные цены для классов автомобилей
+          nullable: true
+          additionalProperties:
+            type: number
+            format: decimal
+          example:
+            A: 1500.00
+            B: 2000.00
+            C: 2500.00
+        created_at:
+          type: string
+          format: date-time
+          description: Дата создания
+          example: "2025-10-08T10:00:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: Дата обновления
+          example: "2025-10-08T10:00:00Z"
+
+    ListPricingRulesResponse:
+      type: object
+      properties:
+        rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/PricingRuleResponse'
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Описание ошибки
+          example: "invalid request body"
+
+  responses:
+    BadRequest:
+      description: Некорректный запрос
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "invalid request body"
+
+    NotFound:
+      description: Ресурс не найден
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "resource not found"
+
+    InternalError:
+      description: Внутренняя ошибка сервера
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "internal server error"
