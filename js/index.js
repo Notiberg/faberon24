@@ -1,5 +1,5 @@
 // Initialize user credentials on page load
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   try {
     loadUserCredentials();
     
@@ -10,6 +10,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     logger.info('Index page initialized');
+    
+    // Load and render services from backend
+    if (typeof loadAndRenderServices === 'function') {
+      logger.info('Loading services from backend');
+      await loadAndRenderServices();
+    } else {
+      logger.warn('loadAndRenderServices function not found');
+    }
   } catch (error) {
     const errorInfo = errorHandler.handle(error, 'index.js DOMContentLoaded');
     logger.error('Failed to initialize page:', errorInfo);
@@ -185,27 +193,29 @@ document.addEventListener('keydown', (e) => {
 
 // Search functionality
 const searchInput = document.getElementById('21_191');
-const serviceCards = document.querySelectorAll('.service-card');
 
-searchInput.addEventListener('input', (e) => {
-  const searchTerm = e.target.value.toLowerCase().trim();
-  
-  serviceCards.forEach(card => {
-    const serviceName = card.dataset.serviceName.toLowerCase();
-    const serviceShort = card.dataset.serviceShort.toLowerCase();
+if (searchInput) {
+  searchInput.addEventListener('input', (e) => {
+    const searchTerm = e.target.value.toLowerCase().trim();
+    const serviceCards = document.querySelectorAll('.service-card');
     
-    if (searchTerm === '') {
-      // Show all cards if search is empty
-      card.classList.remove('hidden');
-    } else if (serviceName.includes(searchTerm) || serviceShort.includes(searchTerm)) {
-      // Show card if it matches search term
-      card.classList.remove('hidden');
-    } else {
-      // Hide card if it doesn't match
-      card.classList.add('hidden');
-    }
+    serviceCards.forEach(card => {
+      const serviceName = card.dataset.serviceName?.toLowerCase() || '';
+      const serviceShort = card.dataset.serviceShort?.toLowerCase() || '';
+      
+      if (searchTerm === '') {
+        // Show all cards if search is empty
+        card.classList.remove('hidden');
+      } else if (serviceName.includes(searchTerm) || serviceShort.includes(searchTerm)) {
+        // Show card if it matches search term
+        card.classList.remove('hidden');
+      } else {
+        // Hide card if it doesn't match
+        card.classList.add('hidden');
+      }
+    });
   });
-});
+}
 
 // Service Details Modal Functions
 const serviceModal = document.getElementById('service-modal');
@@ -270,20 +280,8 @@ function closeServiceModal() {
   serviceLastClickedCard = null;
 }
 
-// Add click listeners to service cards
-// Note: Dynamic cards from seller.js will add their own listeners
-// Static cards from HTML will get listeners here
-if (serviceCards && serviceCards.length > 0) {
-  serviceCards.forEach(card => {
-    // Only add listener if card doesn't have data-service-id (dynamic cards have this)
-    if (!card.hasAttribute('data-service-id')) {
-      card.addEventListener('click', (e) => {
-        e.stopPropagation();
-        openServiceModal(card);
-      });
-    }
-  });
-}
+// Note: Click listeners for service cards are added dynamically by seller.js
+// No need to add listeners here as all cards are created dynamically
 
 // Close modal when clicking outside
 serviceModal.addEventListener('click', (e) => {

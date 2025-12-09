@@ -2,6 +2,9 @@
 const SELLER_API_BASE = 'http://localhost:8081/api/v1';
 const PRICE_API_BASE = 'http://localhost:8082/api/v1';
 
+// Flag to prevent multiple simultaneous loads
+let isLoadingServices = false;
+
 // Get all companies
 async function getCompanies() {
   try {
@@ -261,6 +264,8 @@ async function deleteService(companyId, serviceId) {
 // Calculate price using PriceService
 async function calculatePrice(companyId, serviceId, userId = null) {
   try {
+    logger.info('Calculating price', { companyId, serviceId, userId });
+    
     const response = await fetch(`${PRICE_API_BASE}/prices/calculate`, {
       method: 'POST',
       headers: {
@@ -278,6 +283,8 @@ async function calculatePrice(companyId, serviceId, userId = null) {
     }
 
     const data = await response.json();
+    logger.info('PriceService response', { data });
+    
     if (data.prices && data.prices.length > 0) {
       const priceInfo = data.prices[0];
       logger.info('Price calculated from PriceService', { 
@@ -294,8 +301,10 @@ async function calculatePrice(companyId, serviceId, userId = null) {
     
     throw new Error('No price returned from PriceService');
   } catch (error) {
-    logger.warn('Failed to get price from PriceService, using fallback', { 
-      serviceId, 
+    logger.error('Failed to get price from PriceService', { 
+      serviceId,
+      companyId,
+      userId,
       error: error.message 
     });
     // Fallback: return a default price
@@ -328,6 +337,14 @@ function getShortDescription(description) {
 // Load and render services on index page
 async function loadAndRenderServices() {
   try {
+    // Prevent multiple simultaneous loads
+    if (isLoadingServices) {
+      logger.warn('Services are already loading, skipping duplicate request');
+      return;
+    }
+    
+    isLoadingServices = true;
+    
     // Get all companies
     const companies = await getCompanies();
     
@@ -368,8 +385,8 @@ async function loadAndRenderServices() {
     // Create service cards from backend data
     for (const service of allServices) {
       try {
-        // Get current user ID from localStorage (set during login)
-        const userId = window.currentUserId || null;
+        // Get current user ID from global variable (set in api.js)
+        const userId = currentUserID || null;
         
         // Calculate price using PriceService
         const priceInfo = await calculatePrice(service.company_id, service.id, userId);
@@ -409,6 +426,8 @@ async function loadAndRenderServices() {
     const errorInfo = errorHandler.handle(error, 'loadAndRenderServices');
     logger.error('Failed to load and render services:', errorInfo);
     errorHandler.showNotification('Не удалось загрузить услуги', 'error');
+  } finally {
+    isLoadingServices = false;
   }
 }
 

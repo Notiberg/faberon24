@@ -311,6 +311,12 @@ async function selectCarFromBackend(carID, carName) {
     const user = await executeWithTimeout(getCurrentUser());
     updateCarsListFromBackend(user.cars);
     
+    // Reload services with new car prices
+    logger.info('Reloading services with new car prices');
+    if (typeof loadAndRenderServices === 'function') {
+      await loadAndRenderServices();
+    }
+    
     dropdownOpen = false;
     carDropdownMenu.classList.remove('active');
     
