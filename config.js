@@ -27,10 +27,16 @@ function getEnvVar(name, defaultValue) {
   return defaultValue;
 }
 
-// Set API URLs
-window.API_BASE_URL = getEnvVar('API_BASE_URL', 'http://localhost:8080');
-window.SELLER_API_BASE = getEnvVar('SELLER_API_BASE', 'http://localhost:8081/api/v1');
-window.PRICE_API_BASE = getEnvVar('PRICE_API_BASE', 'http://localhost:8082/api/v1');
+// Check for API URLs in URL parameters
+const urlParams = new URLSearchParams(window.location.search);
+const apiBaseFromUrl = urlParams.get('API_BASE_URL');
+const sellerApiFromUrl = urlParams.get('SELLER_API_BASE');
+const priceApiFromUrl = urlParams.get('PRICE_API_BASE');
+
+// Set API URLs with priority: URL params > localStorage > defaults
+window.API_BASE_URL = apiBaseFromUrl || getEnvVar('API_BASE_URL', 'http://localhost:8080');
+window.SELLER_API_BASE = sellerApiFromUrl || getEnvVar('SELLER_API_BASE', 'http://localhost:8081/api/v1');
+window.PRICE_API_BASE = priceApiFromUrl || getEnvVar('PRICE_API_BASE', 'http://localhost:8082/api/v1');
 
 // Log configuration
 console.log('API Configuration loaded:', {
