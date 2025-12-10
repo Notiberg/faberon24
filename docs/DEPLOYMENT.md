@@ -1,192 +1,156 @@
-# Faberon24 - Deployment Guide
+# 🚀 БЫСТРЫЙ СТАРТ РАЗВЕРТЫВАНИЯ
 
-## Проект структура
+## ⚡ 5 МИНУТ ДО ЗАПУСКА
 
-Проект состоит из трех основных компонентов:
+### ШАГИ:
 
-### 1. Фронтенд (этот репозиторий)
-- Статический сайт с HTML/CSS/JavaScript
-- Главная страница с услугами автомойки
-- Страница профиля пользователя
-- Развертывается на **Vercel**
+#### 1️⃣ **Запустить Backend (Docker)**
 
-### 2. SMC-UserService (Backend)
-- Управление пользователями и их машинами
-- REST API на порту 8080
-- PostgreSQL база данных
-- Развертывается в **Docker**
-
-### 3. SMC-SellerService (Backend)
-- Управление компаниями и услугами
-- REST API на порту 8081
-- PostgreSQL база данных
-- Развертывается в **Docker**
-
-## Локальное развертывание
-
-### Требования
-- Node.js (для фронтенда)
-- Docker и Docker Compose (для бэкенда)
-- Python 3 (для утилит)
-
-### Запуск фронтенда локально
 ```bash
-# Простой HTTP сервер
-python3 -m http.server 8000
-# или
-npx http-server -p 8000
-```
+# Перейти в директорию UserService
+cd /Users/yaroslav/Desktop/Faberon/SMC-UserService-main
 
-### Запуск бэкенда локально
-```bash
-# UserService
-cd SMC-UserService-main
+# Запустить все сервисы
 docker-compose up -d
 
-# SellerService
-cd SMC-SellerService-main
-docker-compose up -d
-```
-
-## Развертывание на Vercel
-
-### Шаг 1: Подготовка репозитория
-```bash
-# Убедитесь, что все файлы загружены на GitHub
-git add -A
-git commit -m "Prepare for Vercel deployment"
-git push
-```
-
-### Шаг 2: Развертывание на Vercel
-```bash
-# Установите Vercel CLI
-npm install -g vercel
-
-# Разверните проект
-vercel
-```
-
-### Шаг 3: Конфигурация переменных окружения
-В Vercel Dashboard установите переменные окружения:
-- `API_BASE_URL` - URL бэкенда UserService (например, https://your-userservice.com)
-- `SELLER_API_BASE` - URL бэкенда SellerService (например, https://your-sellerservice.com)
-
-### Шаг 4: Обновление API URL в коде
-Обновите файлы для использования переменных окружения:
-- `js/api.js` - используйте `process.env.API_BASE_URL` или `window.API_BASE_URL`
-- `js/seller.js` - используйте `process.env.SELLER_API_BASE` или `window.SELLER_API_BASE`
-
-## Развертывание бэкенда
-
-### Docker Hub
-```bash
-# Для UserService
-cd SMC-UserService-main
-docker build -f Dockerfile.userService -t your-username/smc-userservice:latest .
-docker push your-username/smc-userservice:latest
-
-# Для SellerService
-cd SMC-SellerService-main
-docker build -f Dockerfile.sellerservice -t your-username/smc-sellerservice:latest .
-docker push your-username/smc-sellerservice:latest
-```
-
-### Railway, Render или другие платформы
-1. Создайте аккаунт на платформе
-2. Подключите GitHub репозиторий
-3. Установите переменные окружения (DB_HOST, DB_PORT, и т.д.)
-4. Разверните контейнер
-
-## Переменные окружения
-
-### Фронтенд (Vercel)
-```
-API_BASE_URL=https://userservice.example.com
-SELLER_API_BASE=https://sellerservice.example.com
-```
-
-### UserService (Docker)
-```
-DB_HOST=postgres
-DB_PORT=5432
-DB_USER=postgres
-DB_PASSWORD=postgres
-DB_NAME=smc_userservice
-DB_SSLMODE=disable
-HTTP_PORT=8080
-LOG_LEVEL=info
-LOG_FILE=/app/logs/app.log
-```
-
-### SellerService (Docker)
-```
-DB_HOST=postgres
-DB_PORT=5432
-DB_USER=postgres
-DB_PASSWORD=postgres
-DB_NAME=smc_sellerservice
-DB_SSLMODE=disable
-HTTP_PORT=8081
-LOG_LEVEL=info
-LOG_FILE=/app/logs/app.log
-```
-
-## Проверка развертывания
-
-### Фронтенд
-```bash
-curl https://your-vercel-domain.vercel.app/index.html
-```
-
-### UserService
-```bash
-curl -H "X-User-ID: 123456789" -H "X-User-Role: client" \
-  https://your-userservice.example.com/users/me
-```
-
-### SellerService
-```bash
-curl https://your-sellerservice.example.com/api/v1/companies
-```
-
-## Troubleshooting
-
-### CORS ошибки
-Убедитесь, что оба бэкенда имеют правильную конфигурацию CORS:
-- `Access-Control-Allow-Origin: *`
-- `Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS`
-- `Access-Control-Allow-Headers: Content-Type, X-User-ID, X-User-Role`
-
-### Проблемы с подключением к БД
-- Проверьте переменные окружения DB_HOST, DB_PORT
-- Убедитесь, что БД запущена и доступна
-- Проверьте логи контейнера: `docker logs container-name`
-
-### Проблемы с фронтендом
-- Очистите кэш браузера (Ctrl+Shift+Delete)
-- Проверьте консоль браузера на ошибки
-- Убедитесь, что API URL правильно установлены
-
-## Полезные команды
-
-```bash
-# Проверить статус контейнеров
+# Проверить статус
 docker-compose ps
 
-# Посмотреть логи
-docker-compose logs -f service-name
-
-# Перезагрузить сервис
-docker-compose restart service-name
-
-# Остановить все сервисы
-docker-compose down
-
-# Запустить с пересборкой
-docker-compose up -d --build
+# Должны быть запущены:
+# - smc-userservice-app
+# - smc-userservice-db
+# - smc-sellerservice-app
+# - smc-sellerservice-db
+# - smc-priceservice-app
+# - smc-priceservice-db
 ```
 
-## Контакты и поддержка
+#### 2️⃣ **Получить IP адрес**
 
-Для вопросов и проблем создавайте Issues в GitHub репозитории.
+```bash
+# macOS
+ifconfig | grep "inet " | grep -v 127.0.0.1
+
+# Результат: inet 192.168.1.100 (запомните это число!)
+```
+
+#### 3️⃣ **Обновить GitHub**
+
+```bash
+# Перейти в директорию фронтенда
+cd /Users/yaroslav/Desktop/Faberon
+
+# Добавить все файлы
+git add -A
+
+# Коммитить
+git commit -m "Ready for Vercel deployment"
+
+# Загрузить на GitHub
+git push origin main
+```
+
+#### 4️⃣ **Развернуть на Vercel**
+
+1. Перейти на https://vercel.com
+2. Нажать **"New Project"**
+3. Выбрать **"Import Git Repository"**
+4. Выбрать `faberon24`
+5. Нажать **"Import"**
+
+#### 5️⃣ **Настроить Environment Variables**
+
+В Vercel Dashboard → Settings → Environment Variables:
+
+```
+API_BASE_URL = http://192.168.1.100:8080
+PRICE_API_BASE = http://192.168.1.100:8082/api/v1
+SELLER_API_BASE = http://192.168.1.100:8081/api/v1
+```
+
+**Замените 192.168.1.100 на ваш IP!**
+
+#### 6️⃣ **Дождаться развертывания**
+
+- Vercel автоматически развернет при push на GitHub
+- Проверить статус на https://vercel.com/dashboard
+- Получить URL (например: https://faberon24.vercel.app)
+
+---
+
+## ✅ ПРОВЕРКА
+
+### Backend работает?
+
+```bash
+# Проверить UserService
+curl http://localhost:8080/users/me -H "X-User-ID: 123456789"
+
+# Должен вернуть JSON с данными пользователя
+```
+
+### Frontend работает?
+
+1. Открыть в браузере: `https://faberon24.vercel.app?X-UserID=123456789`
+2. Должны загрузиться машины и услуги
+3. Открыть DevTools (F12) → Network
+4. Проверить, что API запросы идут на Backend
+
+---
+
+## 🔗 РЕШЕНИЕ ПРОБЛЕМЫ: Frontend не видит Backend
+
+### Проблема: CORS ошибка
+
+**Решение: Использовать ngrok туннель**
+
+```bash
+# 1. Установить ngrok
+brew install ngrok
+
+# 2. Запустить туннель
+ngrok http 8080
+
+# 3. Скопировать URL (например: https://abc123.ngrok.io)
+
+# 4. Обновить в Vercel:
+# API_BASE_URL = https://abc123.ngrok.io
+
+# 5. Redeploy на Vercel (git push)
+```
+
+---
+
+## 📱 ИСПОЛЬЗОВАНИЕ
+
+### Открыть приложение
+
+```
+https://faberon24.vercel.app?X-UserID=123456789
+```
+
+### Разные пользователи
+
+```
+https://faberon24.vercel.app?X-UserID=111111
+https://faberon24.vercel.app?X-UserID=222222
+https://faberon24.vercel.app?X-UserID=333333
+```
+
+Каждый пользователь видит только свои данные!
+
+---
+
+## 🎯 ГОТОВО!
+
+Теперь у вас есть:
+- ✅ Backend на локальном Docker
+- ✅ Frontend на Vercel
+- ✅ Полная интеграция
+- ✅ User-specific data isolation
+
+**Система полностью готова к использованию!** 🚀
+
+---
+
+**Для подробной информации смотрите**: `docs/DEPLOYMENT_GUIDE.md`
