@@ -85,7 +85,28 @@ All documentation is in the `docs/` folder:
 
 ## 🧪 Testing
 
-Test credentials (auto-loaded):
+### Auto-Loading User ID from URL
+
+The application automatically loads user ID from the `X-UserID` query parameter:
+
+```
+https://auto-theme-chro.vercel.app?X-UserID=1122333
+```
+
+**How it works:**
+1. Application parses `X-UserID` from URL query parameters
+2. If found, uses it as the current user ID
+3. Saves it to localStorage for persistence
+4. Falls back to localStorage if URL parameter is missing
+5. Uses test credentials (123456789) if neither is available
+
+**Example URLs:**
+- `http://localhost:8000/index.html?X-UserID=1122333`
+- `http://localhost:8000/profile.html?X-UserID=9876543210`
+
+### Default Test Credentials
+
+If no X-UserID is provided:
 - User ID: `123456789`
 - Role: `client`
 
