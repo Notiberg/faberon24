@@ -1,9 +1,4 @@
 {
   "buildCommand": "",
-  "outputDirectory": ".",
-  "env": {
-    "API_BASE_URL": "@api_base_url",
-    "SELLER_API_BASE": "@seller_api_base",
-    "PRICE_API_BASE": "@price_api_base"
-  }
+  "outputDirectory": "."
 }
