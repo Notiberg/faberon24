@@ -1,9 +1,9 @@
 /**
  * Auto-generated configuration file
- * Generated at: 2025-12-10T22:39:00.000Z
+ * Generated at: 2025-12-10T19:41:54.868Z
  */
 
-// API Configuration (defaults - will be overridden by build process)
+// API Configuration
 window.API_BASE_URL = 'http://localhost:8080';
 window.SELLER_API_BASE = 'http://localhost:8081/api/v1';
 window.PRICE_API_BASE = 'http://localhost:8082/api/v1';
