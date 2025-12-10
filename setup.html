@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Faberon24 - API Configuration</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .container {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 600px;
+      width: 100%;
+      padding: 40px;
+    }
+    
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 28px;
+    }
+    
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    label {
+      display: block;
+      color: #333;
+      font-weight: 600;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+    
+    input {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: monospace;
+      transition: border-color 0.3s;
+    }
+    
+    input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    
+    .help-text {
+      color: #999;
+      font-size: 12px;
+      margin-top: 6px;
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 30px;
+    }
+    
+    button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-secondary {
+      background: #f0f0f0;
+      color: #333;
+    }
+    
+    .btn-secondary:hover {
+      background: #e0e0e0;
+    }
+    
+    .info-box {
+      background: #f5f5f5;
+      border-left: 4px solid #667eea;
+      padding: 15px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-size: 13px;
+      color: #555;
+    }
+    
+    .success {
+      background: #d4edda;
+      border-left-color: #28a745;
+      color: #155724;
+    }
+    
+    .error {
+      background: #f8d7da;
+      border-left-color: #dc3545;
+      color: #721c24;
+    }
+    
+    .status {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 6px;
+      font-size: 13px;
+      display: none;
+    }
+    
+    code {
+      background: #f0f0f0;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔧 Faberon24 API Configuration</h1>
+    <p class="subtitle">Настройка API endpoints для подключения к локальному Backend</p>
+    
+    <div class="info-box">
+      <strong>ℹ️ Инструкция:</strong><br>
+      1. Запустите ngrok: <code>./ngrok http 8080</code><br>
+      2. Скопируйте ngrok URL (например: <code>https://abc123.ngrok.io</code>)<br>
+      3. Вставьте URL ниже и нажмите "Перейти"
+    </div>
+    
+    <form id="configForm">
+      <div class="form-group">
+        <label for="ngrokUrl">ngrok Base URL *</label>
+        <input 
+          type="text" 
+          id="ngrokUrl" 
+          placeholder="https://abc123-xyz789.ngrok.io"
+          required
+        >
+        <div class="help-text">Скопируйте из вывода ngrok (без /api/v1 в конце)</div>
+      </div>
+      
+      <div class="form-group">
+        <label for="userId">User ID (опционально)</label>
+        <input 
+          type="text" 
+          id="userId" 
+          placeholder="123456789"
+          value="123456789"
+        >
+        <div class="help-text">Telegram User ID для тестирования</div>
+      </div>
+      
+      <div class="button-group">
+        <button type="submit" class="btn-primary">✓ Перейти на Faberon24</button>
+        <button type="button" class="btn-secondary" onclick="loadFromStorage()">↻ Загрузить сохраненные</button>
+      </div>
+      
+      <div id="status" class="status"></div>
+    </form>
+  </div>
+
+  <script>
+    // Load saved configuration from localStorage
+    function loadFromStorage() {
+      const saved = localStorage.getItem('API_BASE_URL');
+      if (saved) {
+        document.getElementById('ngrokUrl').value = saved;
+        showStatus('Конфигурация загружена из localStorage', 'success');
+      } else {
+        showStatus('Нет сохраненной конфигурации', 'error');
+      }
+    }
+
+    // Show status message
+    function showStatus(message, type) {
+      const status = document.getElementById('status');
+      status.textContent = message;
+      status.className = `status ${type}`;
+      status.style.display = 'block';
+    }
+
+    // Handle form submission
+    document.getElementById('configForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const ngrokUrl = document.getElementById('ngrokUrl').value.trim();
+      const userId = document.getElementById('userId').value.trim() || '123456789';
+      
+      if (!ngrokUrl) {
+        showStatus('❌ Пожалуйста, введите ngrok URL', 'error');
+        return;
+      }
+      
+      // Validate URL format
+      if (!ngrokUrl.startsWith('https://')) {
+        showStatus('❌ URL должен начинаться с https://', 'error');
+        return;
+      }
+      
+      // Save to localStorage
+      localStorage.setItem('API_BASE_URL', ngrokUrl);
+      localStorage.setItem('SELLER_API_BASE', `${ngrokUrl}:8081/api/v1`);
+      localStorage.setItem('PRICE_API_BASE', `${ngrokUrl}:8082/api/v1`);
+      
+      showStatus('✓ Конфигурация сохранена! Переходим на Faberon24...', 'success');
+      
+      // Redirect to index.html with parameters
+      setTimeout(() => {
+        const params = new URLSearchParams({
+          'X-UserID': userId,
+          'API_BASE_URL': ngrokUrl,
+          'SELLER_API_BASE': `${ngrokUrl}:8081/api/v1`,
+          'PRICE_API_BASE': `${ngrokUrl}:8082/api/v1`
+        });
+        window.location.href = `index.html?${params.toString()}`;
+      }, 1000);
+    });
+    
+    // Load from storage on page load
+    window.addEventListener('load', function() {
+      const saved = localStorage.getItem('API_BASE_URL');
+      if (saved) {
+        document.getElementById('ngrokUrl').value = saved;
+      }
+    });
+  </script>
+</body>
+</html>
