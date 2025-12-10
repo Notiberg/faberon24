@@ -8,6 +8,19 @@ const API_BASE_URL = 'http://localhost:8080';
 let currentUserID = null;
 let currentUserRole = 'client';
 
+// Parse X-UserID from URL query parameters
+function parseUserIDFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  const userIDFromURL = params.get('X-UserID');
+  
+  if (userIDFromURL) {
+    logger.info('User ID from URL', { userIDFromURL });
+    return userIDFromURL;
+  }
+  
+  return null;
+}
+
 // Set user credentials
 function setUserCredentials(userID, role = 'client') {
   currentUserID = userID;
@@ -16,10 +29,21 @@ function setUserCredentials(userID, role = 'client') {
   localStorage.setItem('userRole', role);
 }
 
-// Load credentials from storage
+// Load credentials from URL or storage
 function loadUserCredentials() {
-  currentUserID = localStorage.getItem('userID');
-  currentUserRole = localStorage.getItem('userRole') || 'client';
+  // First, try to get userID from URL parameters
+  const userIDFromURL = parseUserIDFromURL();
+  
+  if (userIDFromURL) {
+    // If found in URL, use it and save to localStorage
+    setUserCredentials(userIDFromURL, 'client');
+    logger.info('User credentials loaded from URL', { userID: userIDFromURL });
+  } else {
+    // Otherwise, load from localStorage
+    currentUserID = localStorage.getItem('userID');
+    currentUserRole = localStorage.getItem('userRole') || 'client';
+    logger.info('User credentials loaded from localStorage', { userID: currentUserID });
+  }
 }
 
 // Get auth headers
