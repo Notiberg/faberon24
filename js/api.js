@@ -3,7 +3,8 @@
  * Base URL: http://localhost:8080
  */
 
-const API_BASE_URL = 'http://localhost:8080';
+// Use window.API_BASE_URL (set by config.js) or fallback to localhost
+const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8080';
 
 let currentUserID = null;
 let currentUserRole = 'client';
