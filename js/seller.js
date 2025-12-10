@@ -407,9 +407,10 @@ async function loadAndRenderServices() {
         card.className = 'frame-9_464 service-card';
         card.setAttribute('data-service-id', service.id);
         card.setAttribute('data-service-name', service.name);
-        card.setAttribute('data-service-price', `${price} ₽`);
+        card.setAttribute('data-service-price', price);
         card.setAttribute('data-service-short', shortDesc);
         card.setAttribute('data-service-full', fullDesc);
+        card.setAttribute('data-duration', service.average_duration);
         
         card.innerHTML = `
           <span class="text-2_1366">Цена:</span>
