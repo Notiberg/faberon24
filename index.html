@@ -6,14 +6,14 @@
   <title>Faberon24</title>
   <link rel="stylesheet" href="css/font.css">
   <link rel="stylesheet" href="css/index.css?v=2">
-  <link rel="stylesheet" href="css/filters-popup.css">
+  <link rel="stylesheet" href="css/filters-popup.css?v=4">
   <script src="config.js"></script>
-  <script src="js/animation.js?v=16" defer></script>
-  <script src="js/error-handler.js?v=16" defer></script>
-  <script src="js/api.js?v=16" defer></script>
-  <script src="js/seller.js?v=16" defer></script>
-  <script src="js/filters-popup.js?v=16" defer></script>
-  <script src="js/index.js?v=16" defer></script>
+  <script src="js/animation.js?v=17" defer></script>
+  <script src="js/error-handler.js?v=17" defer></script>
+  <script src="js/api.js?v=17" defer></script>
+  <script src="js/seller.js?v=17" defer></script>
+  <script src="js/filters-popup.js?v=17" defer></script>
+  <script src="js/index.js?v=17" defer></script>
 </head>
 <body>
 <!-- Background image -->
@@ -40,37 +40,42 @@
 <div id="filters-popup" class="filters-popup hidden">
   <div class="filters-popup-overlay"></div>
   <div class="filters-popup-content">
-    <!-- All button -->
-    <button class="filter-btn filter-btn-all" id="filter-all">Все</button>
+    <div class="filters-popup-header">
+      <h3>Фильтры</h3>
+      <button class="filters-popup-close" id="filters-popup-close">✕</button>
+    </div>
     
-    <!-- Price dropdown -->
-    <div class="filter-dropdown">
-      <button class="filter-btn filter-dropdown-btn" id="price-dropdown-btn">
-        <span class="filter-icon">💰</span>
-        <span class="filter-label">Стоимость</span>
-        <span class="filter-arrow">▼</span>
-      </button>
-      <div class="filter-dropdown-menu hidden" id="price-dropdown-menu">
-        <div class="filter-option" data-price="0-500">До 500 ₽</div>
-        <div class="filter-option" data-price="500-1000">500 - 1000 ₽</div>
-        <div class="filter-option" data-price="1000-2000">1000 - 2000 ₽</div>
-        <div class="filter-option" data-price="2000-5000">2000 - 5000 ₽</div>
-        <div class="filter-option" data-price="5000+">5000+ ₽</div>
+    <div class="filters-popup-body">
+      <!-- Price Filter -->
+      <div class="filter-section">
+        <label class="filter-section-label">Стоимость</label>
+        <div class="price-input-group">
+          <input type="number" id="price-input" class="price-input" placeholder="Введите цену" min="0" max="10000">
+          <span class="price-unit">₽</span>
+        </div>
+        <div class="price-presets">
+          <button class="price-preset" data-price="0-500">До 500</button>
+          <button class="price-preset" data-price="500-1000">500-1000</button>
+          <button class="price-preset" data-price="1000-2000">1000-2000</button>
+          <button class="price-preset" data-price="2000-5000">2000-5000</button>
+          <button class="price-preset" data-price="5000+">5000+</button>
+        </div>
+      </div>
+      
+      <!-- Duration Filter -->
+      <div class="filter-section">
+        <label class="filter-section-label">Длительность</label>
+        <div class="duration-presets">
+          <button class="duration-preset" data-duration="0-30">До 30 мин</button>
+          <button class="duration-preset" data-duration="30-60">30-60 мин</button>
+          <button class="duration-preset" data-duration="60+">60+ мин</button>
+        </div>
       </div>
     </div>
     
-    <!-- Duration dropdown -->
-    <div class="filter-dropdown">
-      <button class="filter-btn filter-dropdown-btn" id="duration-dropdown-btn">
-        <span class="filter-icon">⏱</span>
-        <span class="filter-label">Длительность</span>
-        <span class="filter-arrow">▼</span>
-      </button>
-      <div class="filter-dropdown-menu hidden" id="duration-dropdown-menu">
-        <div class="filter-option" data-duration="0-30">До 30 минут</div>
-        <div class="filter-option" data-duration="30-60">30 - 60 минут</div>
-        <div class="filter-option" data-duration="60+">Более 60 минут</div>
-      </div>
+    <div class="filters-popup-footer">
+      <button class="filter-btn-reset" id="filter-reset">Сбросить</button>
+      <button class="filter-btn-apply" id="filter-apply">Применить</button>
     </div>
   </div>
 </div>

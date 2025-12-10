@@ -1,6 +1,6 @@
 /**
  * Filters Popup Module
- * Handles filter popup and filtering logic
+ * Handles filter popup with presets and input
  */
 
 let activeFilters = {
@@ -8,26 +8,31 @@ let activeFilters = {
   duration: null
 };
 
-// Initialize filters popup
 function initFiltersPopup() {
   const filtersBtn = document.querySelector('.filters-btn');
   const filtersPopup = document.getElementById('filters-popup');
   const filtersOverlay = document.querySelector('.filters-popup-overlay');
-  const filterAllBtn = document.getElementById('filter-all');
+  const filtersClose = document.getElementById('filters-popup-close');
   
-  const priceDropdownBtn = document.getElementById('price-dropdown-btn');
-  const priceDropdownMenu = document.getElementById('price-dropdown-menu');
-  const priceOptions = priceDropdownMenu.querySelectorAll('.filter-option');
+  const priceInput = document.getElementById('price-input');
+  const pricePresets = document.querySelectorAll('.price-preset');
+  const durationPresets = document.querySelectorAll('.duration-preset');
   
-  const durationDropdownBtn = document.getElementById('duration-dropdown-btn');
-  const durationDropdownMenu = document.getElementById('duration-dropdown-menu');
-  const durationOptions = durationDropdownMenu.querySelectorAll('.filter-option');
+  const filterReset = document.getElementById('filter-reset');
+  const filterApply = document.getElementById('filter-apply');
 
   // Open filters popup
   if (filtersBtn) {
     filtersBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       filtersPopup.classList.toggle('hidden');
+    });
+  }
+
+  // Close filters popup
+  if (filtersClose) {
+    filtersClose.addEventListener('click', () => {
+      filtersPopup.classList.add('hidden');
     });
   }
 
@@ -45,97 +50,79 @@ function initFiltersPopup() {
     }
   });
 
-  // Price dropdown toggle
-  if (priceDropdownBtn) {
-    priceDropdownBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      priceDropdownMenu.classList.toggle('hidden');
-      durationDropdownMenu.classList.add('hidden');
-      priceDropdownBtn.classList.toggle('active');
-      durationDropdownBtn.classList.remove('active');
+  // Price input
+  if (priceInput) {
+    priceInput.addEventListener('input', (e) => {
+      const value = parseInt(e.target.value) || 0;
+      activeFilters.price = value > 0 ? `${value}-${value}` : null;
+      
+      // Update preset buttons
+      pricePresets.forEach(btn => btn.classList.remove('active'));
+      
+      applyFilters();
     });
   }
 
-  // Price options
-  priceOptions.forEach(option => {
-    option.addEventListener('click', (e) => {
+  // Price presets
+  pricePresets.forEach(preset => {
+    preset.addEventListener('click', (e) => {
       e.stopPropagation();
       
       // Update active state
-      priceOptions.forEach(opt => opt.classList.remove('selected'));
-      option.classList.add('selected');
+      pricePresets.forEach(btn => btn.classList.remove('active'));
+      preset.classList.add('active');
       
       // Update filter
-      activeFilters.price = option.dataset.price;
+      activeFilters.price = preset.dataset.price;
       
-      // Update button label
-      priceDropdownBtn.querySelector('.filter-label').textContent = option.textContent;
-      
-      // Close menu
-      priceDropdownMenu.classList.add('hidden');
-      priceDropdownBtn.classList.remove('active');
+      // Clear input
+      if (priceInput) priceInput.value = '';
       
       // Apply filters
       applyFilters();
     });
   });
 
-  // Duration dropdown toggle
-  if (durationDropdownBtn) {
-    durationDropdownBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      durationDropdownMenu.classList.toggle('hidden');
-      priceDropdownMenu.classList.add('hidden');
-      durationDropdownBtn.classList.toggle('active');
-      priceDropdownBtn.classList.remove('active');
-    });
-  }
-
-  // Duration options
-  durationOptions.forEach(option => {
-    option.addEventListener('click', (e) => {
+  // Duration presets
+  durationPresets.forEach(preset => {
+    preset.addEventListener('click', (e) => {
       e.stopPropagation();
       
       // Update active state
-      durationOptions.forEach(opt => opt.classList.remove('selected'));
-      option.classList.add('selected');
+      durationPresets.forEach(btn => btn.classList.remove('active'));
+      preset.classList.add('active');
       
       // Update filter
-      activeFilters.duration = option.dataset.duration;
-      
-      // Update button label
-      durationDropdownBtn.querySelector('.filter-label').textContent = option.textContent;
-      
-      // Close menu
-      durationDropdownMenu.classList.add('hidden');
-      durationDropdownBtn.classList.remove('active');
+      activeFilters.duration = preset.dataset.duration;
       
       // Apply filters
       applyFilters();
     });
   });
 
-  // Reset all filters
-  if (filterAllBtn) {
-    filterAllBtn.addEventListener('click', (e) => {
+  // Reset filters
+  if (filterReset) {
+    filterReset.addEventListener('click', (e) => {
       e.stopPropagation();
       
-      // Reset filters
+      // Reset state
       activeFilters.price = null;
       activeFilters.duration = null;
       
       // Reset UI
-      priceOptions.forEach(opt => opt.classList.remove('selected'));
-      durationOptions.forEach(opt => opt.classList.remove('selected'));
-      priceDropdownBtn.querySelector('.filter-label').textContent = 'Стоимость';
-      durationDropdownBtn.querySelector('.filter-label').textContent = 'Длительность';
-      priceDropdownBtn.classList.remove('active');
-      durationDropdownBtn.classList.remove('active');
-      priceDropdownMenu.classList.add('hidden');
-      durationDropdownMenu.classList.add('hidden');
+      if (priceInput) priceInput.value = '';
+      pricePresets.forEach(btn => btn.classList.remove('active'));
+      durationPresets.forEach(btn => btn.classList.remove('active'));
       
       // Apply filters (show all)
       applyFilters();
+    });
+  }
+
+  // Apply filters
+  if (filterApply) {
+    filterApply.addEventListener('click', (e) => {
+      e.stopPropagation();
       
       // Close popup
       filtersPopup.classList.add('hidden');
