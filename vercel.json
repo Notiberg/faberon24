@@ -1,7 +1,6 @@
 {
-  "buildCommand": "echo 'Frontend is static HTML/CSS/JS - no build needed'",
+  "buildCommand": "",
   "outputDirectory": ".",
-  "framework": "html",
   "env": {
     "API_BASE_URL": "@api_base_url",
     "PRICE_API_BASE": "@price_api_base",

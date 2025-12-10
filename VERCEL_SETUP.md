@@ -45,7 +45,11 @@ git push origin main
 
 **Project Name**: `faberon24` (или другое имя)
 
-**Framework Preset**: `Other` (так как это статический HTML)
+**Framework Preset**: Оставить пустым или выбрать **"HTML"** (если доступно)
+
+**Build Command**: Оставить пустым (не требуется для статического HTML)
+
+**Output Directory**: `.` (текущая директория)
 
 Нажать **"Deploy"** (пока без переменных окружения)
 
