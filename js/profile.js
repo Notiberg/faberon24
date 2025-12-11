@@ -62,10 +62,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     loadUserCredentials();
     
-    // If no user ID, use test credentials
+    // Validate user ID
     if (!currentUserID) {
-      logger.info('No user logged in, using test credentials');
-      setUserCredentials(123456789, 'client');
+      logger.error('No user ID found in URL or localStorage');
+      errorHandler.showNotification('Ошибка: не указан ID пользователя. Используйте ссылку вида: ?X-UserID=123456789', 'error');
+      return;
     }
     
     logger.info('Loading user data from backend', { userID: currentUserID });
