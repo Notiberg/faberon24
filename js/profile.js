@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       setUserCredentials(123456789, 'client');
     }
     
-    logger.info('Loading user data from backend');
+    logger.info('Loading user data from backend', { userID: currentUserID });
     
     // Load user data from backend with timeout
     const user = await executeWithTimeout(getCurrentUser());
