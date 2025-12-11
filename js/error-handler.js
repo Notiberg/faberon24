@@ -192,13 +192,13 @@ window.addEventListener('error', (event) => {
     lineno: event.lineno,
     colno: event.colno
   });
-  errorHandler.showNotification('Произошла критическая ошибка. Пожалуйста, перезагрузите страницу.');
+  // Don't show notification on frontend - only log to console
 });
 
 // Unhandled promise rejection handler
 window.addEventListener('unhandledrejection', (event) => {
   logger.fatal('Unhandled promise rejection:', event.reason);
-  errorHandler.showNotification('Произошла ошибка. Пожалуйста, перезагрузите страницу.');
+  // Don't show notification on frontend - only log to console
 });
 
 // Add CSS animations
