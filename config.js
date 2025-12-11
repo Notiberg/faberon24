@@ -1,17 +1,12 @@
 /**
- * Auto-generated configuration file
- * Generated at: 2025-12-10T19:41:54.868Z
- */
-
-/**
  * API Configuration
- * Supports environment variables and localStorage
+ * Production URLs from Railway
  */
 
-// Get API URLs from environment or localStorage
-window.API_BASE_URL = localStorage.getItem('API_BASE_URL') || 'http://localhost:8080';
-window.SELLER_API_BASE = localStorage.getItem('SELLER_API_BASE') || 'http://localhost:8081/api/v1';
-window.PRICE_API_BASE = localStorage.getItem('PRICE_API_BASE') || 'http://localhost:8082/api/v1';
+// Get API URLs from localStorage or use production defaults
+window.API_BASE_URL = localStorage.getItem('API_BASE_URL') || 'https://faberon-userservice-production.up.railway.app';
+window.SELLER_API_BASE = localStorage.getItem('SELLER_API_BASE') || 'https://faberon-sellerservice-production.up.railway.app/api/v1';
+window.PRICE_API_BASE = localStorage.getItem('PRICE_API_BASE') || 'https://faberon-priceservice-production.up.railway.app/api/v1';
 
 console.log('✅ API Configuration loaded:', {
   API_BASE_URL: window.API_BASE_URL,
