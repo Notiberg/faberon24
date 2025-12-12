@@ -62,8 +62,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     loadUserCredentials();
     
-    // Clear cached user name to force fresh load from backend
+    // Clear all cached user data to force fresh load from backend
     localStorage.removeItem('userName');
+    currentUserName = null;
     
     // Validate user ID
     if (!currentUserID) {
@@ -84,21 +85,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const phoneElement = document.getElementById('62_1446');
     
     if (nameElement) {
-      // Use user name from the response
-      const displayName = user.name || currentUserName || 'Введите ваше имя';
-      
-      console.log('=== PROFILE NAME UPDATE ===');
-      console.log('Element before:', nameElement.textContent);
-      console.log('Setting to:', displayName);
-      
+      // Use user name from backend response only
+      const displayName = user.name || 'Введите ваше имя';
       nameElement.textContent = displayName;
-      
-      console.log('Element after:', nameElement.textContent);
-      console.log('Element ID:', nameElement.id);
-      console.log('Element HTML:', nameElement.outerHTML);
-      console.log('===========================');
-      
-      logger.info('Updated name element', { name: displayName, source: user.name ? 'backend' : 'localStorage' });
+      logger.info('Updated name element', { name: displayName });
     } else {
       logger.warn('Name element (62_1445) not found');
     }
