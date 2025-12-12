@@ -62,6 +62,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     loadUserCredentials();
     
+    // Clear cached user name to force fresh load from backend
+    localStorage.removeItem('userName');
+    
     // Validate user ID
     if (!currentUserID) {
       logger.error('No user ID found in URL or localStorage');
