@@ -81,6 +81,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const phoneElement = document.getElementById('62_1446');
     
     if (nameElement) {
+      // Log the user data to debug
+      logger.info('User data from backend:', { 
+        fullUser: user,
+        name: user.name,
+        nameType: typeof user.name
+      });
+      
       nameElement.textContent = user.name || 'Введите ваше имя';
       logger.info('Updated name element', { name: user.name });
     } else {
