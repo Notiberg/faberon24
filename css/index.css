@@ -112,7 +112,7 @@ span {
   opacity: 1;
   transition: transform 0.8s ease, opacity 0.8s ease;
   margin: 0 auto;
-  margin-top: 200px;
+  margin-top: 230px;
   margin-bottom: 25px;
 }
 
@@ -678,7 +678,7 @@ span {
   height: 44px;
   position: fixed;
   left: 50%;
-  top: 130px;
+  top: 160px;
   transform: translateX(calc(-50% - 30px));
   border-radius: 34px 34px 34px 34px;
   background-color: rgba(255, 255, 255, 0.30000001192092896);
@@ -748,7 +748,7 @@ span {
   height: 44px;
   position: fixed;
   left: calc(50% + 146px);
-  top: 130px;
+  top: 160px;
   border-radius: 34px 34px 34px 34px;
   background-color: rgba(255, 255, 255, 0.30000001192092896);
   z-index: 10;
@@ -966,7 +966,7 @@ span {
 .faberon-logo {
   position: fixed;
   left: 50%;
-  top: 50px;
+  top: 80px;
   transform: translateX(-50%);
   width: 331px;
   height: 61px;
