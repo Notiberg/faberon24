@@ -11,6 +11,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     logger.info('Index page initialized');
     
+    // Load user data and update discount card
+    await loadAndUpdateUserData();
+    
     // Load and render services from backend
     if (typeof loadAndRenderServices === 'function') {
       logger.info('Loading services from backend');
@@ -24,6 +27,31 @@ document.addEventListener('DOMContentLoaded', async () => {
     errorHandler.showNotification(errorInfo.userMessage, 'error');
   }
 });
+
+// Load user data and update discount card with user name
+async function loadAndUpdateUserData() {
+  try {
+    const user = await getCurrentUser();
+    if (user && user.name) {
+      // Update large discount card
+      const largeCardName = document.getElementById('2_477');
+      if (largeCardName) {
+        largeCardName.textContent = user.name;
+      }
+      
+      // Update small discount card
+      const smallCardName = document.getElementById('2_510');
+      if (smallCardName) {
+        smallCardName.textContent = user.name;
+      }
+      
+      logger.info('User data loaded and discount cards updated', { userName: user.name });
+    }
+  } catch (error) {
+    logger.warn('Failed to load user data for discount card:', error);
+    // Keep default names if loading fails
+  }
+}
 
 let lastScrollY = 0;
 let isScrollingDown = false;
