@@ -81,15 +81,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     const phoneElement = document.getElementById('62_1446');
     
     if (nameElement) {
-      nameElement.textContent = user.name;
-      logger.info('Updated name element');
+      nameElement.textContent = user.name || 'Введите ваше имя';
+      logger.info('Updated name element', { name: user.name });
     } else {
       logger.warn('Name element (62_1445) not found');
     }
     
     if (phoneElement) {
-      phoneElement.textContent = `тел. ${user.phone_number}`;
-      logger.info('Updated phone element');
+      const phoneText = user.phone_number ? `тел. ${user.phone_number}` : 'тел. не указан';
+      phoneElement.textContent = phoneText;
+      logger.info('Updated phone element', { phone: user.phone_number });
     } else {
       logger.warn('Phone element (62_1446) not found');
     }
