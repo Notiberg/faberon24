@@ -177,11 +177,21 @@ async function createUser(userData) {
 async function getCurrentUser() {
   const user = await apiRequest('GET', '/users/me');
   
+  // Debug logging
+  console.log('=== getCurrentUser DEBUG ===');
+  console.log('Full user object:', user);
+  console.log('user.name:', user?.name);
+  console.log('user.tg_user_id:', user?.tg_user_id);
+  console.log('All user keys:', user ? Object.keys(user) : 'null');
+  console.log('============================');
+  
   // Save user name to global variable and localStorage
   if (user && user.name) {
     currentUserName = user.name;
     localStorage.setItem('userName', user.name);
     logger.info('User name updated from backend', { name: user.name });
+  } else {
+    logger.warn('User name not found in response', { user });
   }
   
   return user;
