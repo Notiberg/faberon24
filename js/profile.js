@@ -83,7 +83,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (nameElement) {
       // Use user name from the response
       const displayName = user.name || currentUserName || 'Введите ваше имя';
+      
+      console.log('=== PROFILE NAME UPDATE ===');
+      console.log('Element before:', nameElement.textContent);
+      console.log('Setting to:', displayName);
+      
       nameElement.textContent = displayName;
+      
+      console.log('Element after:', nameElement.textContent);
+      console.log('Element ID:', nameElement.id);
+      console.log('Element HTML:', nameElement.outerHTML);
+      console.log('===========================');
+      
       logger.info('Updated name element', { name: displayName, source: user.name ? 'backend' : 'localStorage' });
     } else {
       logger.warn('Name element (62_1445) not found');
