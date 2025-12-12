@@ -8,6 +8,7 @@ const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8080';
 
 let currentUserID = null;
 let currentUserRole = 'client';
+let currentUserName = null;
 
 // Parse X-UserID from URL query parameters
 function parseUserIDFromURL() {
@@ -23,9 +24,13 @@ function parseUserIDFromURL() {
 }
 
 // Set user credentials
-function setUserCredentials(userID, role = 'client') {
+function setUserCredentials(userID, role = 'client', userName = null) {
   currentUserID = userID;
   currentUserRole = role;
+  if (userName) {
+    currentUserName = userName;
+    localStorage.setItem('userName', userName);
+  }
   localStorage.setItem('userID', userID);
   localStorage.setItem('userRole', role);
 }
@@ -43,7 +48,8 @@ function loadUserCredentials() {
     // Otherwise, load from localStorage
     currentUserID = localStorage.getItem('userID');
     currentUserRole = localStorage.getItem('userRole') || 'client';
-    logger.info('User credentials loaded from localStorage', { userID: currentUserID });
+    currentUserName = localStorage.getItem('userName');
+    logger.info('User credentials loaded from localStorage', { userID: currentUserID, userName: currentUserName });
   }
 }
 
@@ -169,7 +175,16 @@ async function createUser(userData) {
 
 // Get current user
 async function getCurrentUser() {
-  return apiRequest('GET', '/users/me');
+  const user = await apiRequest('GET', '/users/me');
+  
+  // Save user name to global variable and localStorage
+  if (user && user.name) {
+    currentUserName = user.name;
+    localStorage.setItem('userName', user.name);
+    logger.info('User name updated from backend', { name: user.name });
+  }
+  
+  return user;
 }
 
 // Update current user

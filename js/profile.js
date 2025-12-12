@@ -81,15 +81,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const phoneElement = document.getElementById('62_1446');
     
     if (nameElement) {
-      // Log the user data to debug
-      logger.info('User data from backend:', { 
-        fullUser: user,
-        name: user.name,
-        nameType: typeof user.name
-      });
-      
-      nameElement.textContent = user.name || 'Введите ваше имя';
-      logger.info('Updated name element', { name: user.name });
+      // Use user name from the response
+      const displayName = user.name || currentUserName || 'Введите ваше имя';
+      nameElement.textContent = displayName;
+      logger.info('Updated name element', { name: displayName, source: user.name ? 'backend' : 'localStorage' });
     } else {
       logger.warn('Name element (62_1445) not found');
     }
